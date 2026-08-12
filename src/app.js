@@ -155,33 +155,39 @@ function initDashboard() {
     });
   });
 
-  document.getElementById('btn-power-plan').addEventListener('click', async () => {
-    const btn = document.getElementById('btn-power-plan');
-    const oldText = btn.textContent;
-    btn.textContent = 'Aplicando...';
-    btn.disabled = true;
-    try {
-      const res = await window.pulso.applyPowerPlan();
-      if (res.status === 'OK' || res.status === 'AVISO') {
-        btn.textContent = 'Plano aplicado!';
-        btn.style.color = 'var(--accent-green)';
-        btn.style.borderColor = 'var(--accent-green)';
-      } else {
-        btn.textContent = 'Erro ao aplicar';
-        btn.style.color = '#f87171';
-        btn.style.borderColor = '#f87171';
+  document.getElementById('btn-power-plan').addEventListener('click', () => {
+    window.showConfirmModal(
+      "Confirmar aplicação", 
+      "Você deseja prosseguir e adicionar o plano de energia Takeda?\n\nLembre-se: O plano foca em desempenho máximo e pode aumentar o aquecimento e reduzir a vida útil da bateria.", 
+      async () => {
+        const btn = document.getElementById('btn-power-plan');
+        const oldText = btn.textContent;
+        btn.textContent = 'Aplicando...';
+        btn.disabled = true;
+        try {
+          const res = await window.pulso.applyPowerPlan();
+          if (res.status === 'OK' || res.status === 'AVISO') {
+            btn.textContent = 'Plano aplicado!';
+            btn.style.color = 'var(--accent-green)';
+            btn.style.borderColor = 'var(--accent-green)';
+          } else {
+            btn.textContent = 'Erro ao aplicar';
+            btn.style.color = '#f87171';
+            btn.style.borderColor = '#f87171';
+          }
+        } catch (e) {
+          btn.textContent = 'Erro ao aplicar';
+          btn.style.color = '#f87171';
+          btn.style.borderColor = '#f87171';
+        }
+        setTimeout(() => {
+          btn.textContent = oldText;
+          btn.style.color = '';
+          btn.style.borderColor = '';
+          btn.disabled = false;
+        }, 3000);
       }
-    } catch (e) {
-      btn.textContent = 'Erro ao aplicar';
-      btn.style.color = '#f87171';
-      btn.style.borderColor = '#f87171';
-    }
-    setTimeout(() => {
-      btn.textContent = oldText;
-      btn.style.color = '';
-      btn.style.borderColor = '';
-      btn.disabled = false;
-    }, 3000);
+    );
   });
 }
 
@@ -247,6 +253,31 @@ function updateMonitorData(d) {
 /* ====================================================
    MODAL LOGIC 
 ==================================================== */
+
+window.showConfirmModal = function(title, text, onConfirm) {
+  const overlay = document.getElementById('modal-overlay');
+  const content = document.getElementById('modal-content');
+  overlay.classList.add('active');
+  content.style.width = '420px';
+
+  content.innerHTML = `
+    <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
+      <div class="modal-title" style="font-size: 1.25rem;">${title}</div>
+    </div>
+    <div class="modal-body" style="padding-top: 16px; padding-bottom: 24px;">
+      <p class="text-gray" style="line-height: 1.5; white-space: pre-wrap; font-size: 0.9rem;">${text}</p>
+    </div>
+    <div class="modal-footer" style="justify-content: flex-end; gap: 12px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 16px;">
+      <button class="btn-modal" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary);" onclick="closeModal()">Cancelar</button>
+      <button class="btn-modal" id="btn-modal-confirm">Confirmar</button>
+    </div>
+  `;
+
+  document.getElementById('btn-modal-confirm').addEventListener('click', () => {
+    closeModal();
+    onConfirm();
+  });
+};
 let currentTab = 'diag';
 let sizesCache = {};
 
@@ -262,6 +293,7 @@ async function openModal() {
   const overlay = document.getElementById('modal-overlay');
   const content = document.getElementById('modal-content');
   overlay.classList.add('active');
+  content.style.width = ''; // Restaurar largura padrao (600px via css)
 
   content.innerHTML = `
     <div class="modal-header">
