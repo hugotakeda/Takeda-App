@@ -1,0 +1,44 @@
+{
+  "name": "takeda-app",
+  "version": "1.0.0",
+  "description": "Takeda App - Análise, Limpeza e Otimização do Sistema",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "electron .",
+    "build": "electron-builder --win",
+    "pack": "electron-builder --dir"
+  },
+  "author": "HonestTech",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^32.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.honesttech.takeda",
+    "productName": "Takeda App",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/**/*",
+      "src/**/*",
+      "assets/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "assets/takeda.pow",
+        "to": "takeda.pow"
+      }
+    ],
+    "win": {
+      "target": "portable",
+      "icon": "assets/takeda-icon-1024.png"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false
+    }
+  }
+}

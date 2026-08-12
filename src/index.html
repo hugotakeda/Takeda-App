@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Takeda App</title>
+  <link rel="stylesheet" href="index.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Splash Screen -->
+  <div id="splash-screen" class="splash-screen">
+    <div class="loading-spinner" style="width: 40px; height: 40px; border-width: 4px; margin-bottom: 24px;"></div>
+    <h2 style="font-size: 1.25rem; font-weight: 600; letter-spacing: -0.5px;">Takeda App</h2>
+    <p style="color: var(--text-secondary); margin-top: 8px; font-size: 0.9rem;">Analisando hardware do sistema...</p>
+  </div>
+
+  <!-- Window Controls (Custom Titlebar) -->
+  <div class="titlebar">
+    <div class="drag-region"></div>
+    <div class="window-controls">
+      <button class="win-btn minimize" id="btn-minimize">
+        <svg width="10" height="10" viewBox="0 0 10 10"><path d="M1,4.5 h8 v1 h-8 z" fill="currentColor"/></svg>
+      </button>
+      <button class="win-btn maximize" id="btn-maximize">
+        <svg width="10" height="10" viewBox="0 0 10 10"><path d="M1,1 v8 h8 v-8 z M2,2 h6 v6 h-6 z" fill="currentColor"/></svg>
+      </button>
+      <button class="win-btn close" id="btn-close">
+        <svg width="10" height="10" viewBox="0 0 10 10"><path d="M1,1 l8,8 M9,1 l-8,8" stroke="currentColor" stroke-width="1.5"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <main class="content" id="page-container">
+    <!-- Pages will be injected here by app.js -->
+  </main>
+
+  <!-- Modal Overlay -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal-content" id="modal-content">
+      <!-- Modal content injected here -->
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>
