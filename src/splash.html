@@ -5,20 +5,28 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background-color: #12141a; 
-      width: 256px;
-      height: 256px;
+      background: transparent;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      font-family: 'Inter', sans-serif;
+      color: #f0f0f0;
+      text-align: center;
+    }
+    .container {
+      width: calc(100% - 4px);
+      height: calc(100% - 4px);
+      background-color: #111111; /* Corrigido: mesma cor do dashboard (--bg-main) */
+      border: 1px solid #262626;
+      border-radius: 12px;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      overflow: hidden;
-      border: 1px solid #262626;
-      border-radius: 12px;
       -webkit-app-region: drag;
-      font-family: 'Inter', sans-serif;
-      color: #f0f0f0;
-      text-align: center;
     }
     .spinner {
       width: 48px;
@@ -35,10 +43,12 @@
   </style>
 </head>
 <body>
-  <div class="spinner"></div>
-  <p style="color: #888888; margin-top: 8px; font-size: 0.95rem;">
-    Olá, <span style="color: #51a2ff; font-weight: 600;">@<span id="username">usuário</span></span>
-  </p>
+  <div class="container">
+    <div class="spinner"></div>
+    <p style="color: #888888; margin-top: 8px; font-size: 0.95rem;">
+      Olá, <span style="color: #51a2ff; font-weight: 600;">@<span id="username">usuário</span></span>
+    </p>
+  </div>
 
   <script>
     if (window.pulso && window.pulso.getUsername) {
