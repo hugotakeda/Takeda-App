@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #12141a; 
+      width: 256px;
+      height: 256px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      border: 1px solid #262626;
+      border-radius: 12px;
+      -webkit-app-region: drag;
+      font-family: 'Inter', sans-serif;
+      color: #f0f0f0;
+      text-align: center;
+    }
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid rgba(81, 162, 255, 0.2);
+      border-top-color: #51a2ff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 24px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="spinner"></div>
+  <p style="color: #888888; margin-top: 8px; font-size: 0.95rem;">
+    Olá, <span style="color: #51a2ff; font-weight: 600;">@<span id="username">usuário</span></span>
+  </p>
+
+  <script>
+    if (window.pulso && window.pulso.getUsername) {
+      window.pulso.getUsername().then(name => {
+        const el = document.getElementById('username');
+        if(el) el.textContent = name;
+      }).catch(err => console.error(err));
+    }
+  </script>
+</body>
+</html>

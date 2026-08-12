@@ -33,6 +33,22 @@ body {
   user-select: none;
 }
 
+/* Global Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #333;
+}
+
 /* --- Titlebar --- */
 .titlebar {
   position: absolute;
@@ -60,27 +76,33 @@ body {
   border: none;
   color: var(--text-secondary);
   display: flex;
-  align-items: center;
   justify-content: center;
-  transition: background 0.2s;
+  align-items: center;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+#btn-maximize {
+  display: none !important;
 }
 .win-btn:hover { background: rgba(255, 255, 255, 0.1); color: var(--text-primary); }
 .win-btn.close:hover { background: #e81123; color: white; }
 
 /* --- Content & Layout --- */
 .content {
+  flex: 1;
   width: 100%;
   height: 100%;
-  padding: 40px 30px 30px 30px; /* Space for titlebar */
+  padding: 32px 20px 16px 20px; /* Space for titlebar */
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .dashboard-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .page-title {
@@ -111,16 +133,17 @@ body {
 /* --- Main Grid --- */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: 240px 1fr;
   gap: 16px;
-  height: calc(100% - 50px);
+  flex: 1;
+  min-height: 0;
 }
 
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  padding: 24px;
+  padding: 16px;
 }
 
 /* --- Left Column (Health) --- */
@@ -136,18 +159,18 @@ body {
   text-transform: uppercase;
   letter-spacing: 1.5px;
   color: var(--text-secondary);
-  margin-bottom: 24px;
+  margin-bottom: 12px;
   font-weight: 600;
 }
 
 .gauge-container {
-  width: 180px;
-  height: 180px;
+  width: 130px;
+  height: 130px;
   position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 12px;
 }
 .gauge-svg {
   width: 100%;
@@ -167,8 +190,8 @@ body {
   transition: stroke-dasharray 1s ease-out;
 }
 .gauge-text { position: absolute; text-align: center; }
-.gauge-score { font-size: 3.5rem; font-weight: 700; line-height: 1; letter-spacing: -2px; }
-.gauge-label { font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px; }
+.gauge-score { font-size: 2.5rem; font-weight: 700; line-height: 1; letter-spacing: -1.5px; }
+.gauge-label { font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px; }
 
 .health-status { font-size: 1.1rem; font-weight: 600; margin-bottom: 4px; }
 .health-desc { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: auto; }
@@ -178,12 +201,12 @@ body {
   background: var(--btn-primary);
   color: #111;
   border: none;
-  padding: 14px;
+  padding: 10px;
   border-radius: 8px;
   font-size: 0.95rem;
   font-weight: 600;
-  margin-top: 24px;
-  margin-bottom: 12px;
+  margin-top: 12px;
+  margin-bottom: 8px;
   cursor: pointer;
   transition: opacity 0.2s;
 }
@@ -194,7 +217,7 @@ body {
   background: transparent;
   color: var(--text-secondary);
   border: 1px solid var(--border-color);
-  padding: 14px;
+  padding: 10px;
   border-radius: 8px;
   font-size: 0.9rem;
   font-weight: 500;
@@ -209,6 +232,7 @@ body {
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr auto;
   gap: 16px;
+  min-height: 0;
 }
 
 .metric-card {
@@ -221,18 +245,18 @@ body {
   text-transform: uppercase;
   letter-spacing: 1px;
   color: var(--text-secondary);
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   font-weight: 600;
 }
 .metric-card .card-value {
-  font-size: 2.25rem;
+  font-size: 2rem;
   font-weight: 700;
   line-height: 1;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   letter-spacing: -1px;
 }
 .metric-card .card-value small {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 500;
   color: var(--text-secondary);
 }
@@ -244,7 +268,7 @@ body {
 /* Sparklines */
 .chart-container {
   margin-top: auto;
-  height: 40px;
+  height: 32px;
   width: 100%;
 }
 .sparkline { width: 100%; height: 100%; overflow: visible; }
@@ -298,19 +322,24 @@ body {
 /* --- System Bar --- */
 .system-bar {
   grid-column: 1 / -1;
-  padding: 16px 24px;
+  padding: 10px 16px;
   display: flex;
   align-items: center;
-  gap: 24px;
+  justify-content: flex-start;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  gap: 6px;
 }
 .system-bar span {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   color: var(--text-secondary);
+  white-space: nowrap;
 }
 .system-bar span.label {
   text-transform: uppercase;
   letter-spacing: 1px;
-  margin-right: 8px;
+  margin-right: 4px;
 }
 .system-bar strong {
   color: var(--text-primary);
@@ -347,7 +376,7 @@ body {
 }
 
 .modal-header {
-  padding: 24px 32px 0 32px;
+  padding: 16px 32px 0 32px;
 }
 .modal-title {
   font-size: 1.5rem;
@@ -357,7 +386,7 @@ body {
 .modal-subtitle {
   font-size: 0.9rem;
   color: var(--text-secondary);
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .modal-tabs {
@@ -367,7 +396,7 @@ body {
   padding: 0 32px;
 }
 .modal-tab {
-  padding: 12px 0;
+  padding: 8px 0;
   color: var(--text-secondary);
   cursor: pointer;
   font-weight: 600;
@@ -382,7 +411,7 @@ body {
 }
 
 .modal-body {
-  padding: 24px 32px;
+  padding: 16px 32px;
   overflow-y: auto;
   flex-grow: 1;
 }
@@ -391,7 +420,7 @@ body {
 .diag-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 .diag-item {
   display: flex;
@@ -425,12 +454,12 @@ body {
 .clean-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 .clean-item {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 .clean-check {
   width: 18px;
@@ -444,7 +473,7 @@ body {
 .clean-name {
   font-weight: 600;
   font-size: 0.95rem;
-  margin-bottom: 2px;
+  margin-bottom: 0;
 }
 .clean-desc {
   font-size: 0.8rem;
@@ -457,7 +486,7 @@ body {
 
 /* Modal Footer */
 .modal-footer {
-  padding: 16px 32px;
+  padding: 12px 32px;
   border-top: 1px solid var(--border-color);
   display: flex;
   justify-content: flex-end;
@@ -485,25 +514,6 @@ body {
 }
 
 
-/* --- Splash Screen --- */
-.splash-screen {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: var(--bg-card);
-  z-index: 100000;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  transition: opacity 0.4s ease, visibility 0.4s ease;
-  -webkit-app-region: drag;
-}
-.splash-screen.hidden {
-  opacity: 0;
-  visibility: hidden;
-}
-
 
 /* Spinner used in Splash & Modals */
 .loading-spinner {
@@ -518,4 +528,269 @@ body {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* ====================================================
+   GAMES PAGE
+==================================================== */
+.games-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+  overflow-y: auto;
+  padding-bottom: 24px;
+  padding-right: 8px; /* scrollbar space */
+  max-height: calc(100vh - 100px);
+}
+
+.game-card {
+  position: relative;
+  height: 200px;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  background-color: var(--bg-card);
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.game-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+}
+
+.game-card-gradient {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60%;
+  background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%);
+  display: flex;
+  align-items: flex-end;
+  padding: 16px;
+  transition: opacity 0.3s;
+}
+
+.game-card-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+
+.game-card-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.game-card:hover .game-card-overlay {
+  opacity: 1;
+}
+
+.btn-game-action {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.btn-game-action:hover {
+  background: rgba(255,255,255,0.25);
+  transform: scale(1.05);
+}
+
+/* Add Game Card */
+.game-card-add {
+  border: 2px dashed var(--border-color);
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: var(--text-secondary);
+  box-shadow: none;
+}
+.game-card-add:hover {
+  background: rgba(255,255,255,0.02);
+  color: var(--text-primary);
+  border-color: rgba(255,255,255,0.2);
+}
+.game-card-add svg {
+  margin-bottom: 12px;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+.game-card-add:hover svg {
+  opacity: 1;
+}
+
+/* ====================================================
+   CONFIG MODAL ELEMENTS
+==================================================== */
+.config-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.config-group:last-child {
+  border-bottom: none;
+}
+
+.config-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.config-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.config-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/* Custom Switch Toggle */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(255,255,255,0.1);
+  transition: .4s;
+  border-radius: 24px;
+}
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .2s;
+  border-radius: 50%;
+}
+.toggle-switch input:checked + .toggle-slider {
+  background-color: var(--btn-primary);
+}
+.toggle-switch input:checked + .toggle-slider:before {
+  transform: translateX(20px);
+}
+
+/* Input group (Executable) */
+.input-group {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.input-field {
+  flex-grow: 1;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+.input-field:focus {
+  outline: none;
+  border-color: rgba(255,255,255,0.2);
+}
+.btn-outline {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+.btn-outline:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+/* Range Slider */
+.slider-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 8px;
+}
+.range-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  outline: none;
+}
+.range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+.slider-value {
+  font-weight: 700;
+  color: var(--btn-primary);
+  width: 20px;
+  text-align: right;
+}
+
+/* Action block (Cover) */
+.config-block {
+  margin-bottom: 24px;
+}
+
+.config-actions-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
 

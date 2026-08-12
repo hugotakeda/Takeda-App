@@ -1,14 +1,14 @@
 export function renderHistory() {
   return `
-    <div class="page-section active" id="sec-history">
-      <div class="dashboard-header" style="display: flex; align-items: center; gap: 16px;">
+    <div class="page-section active" id="sec-history" style="display: flex; flex-direction: column; height: 100%;">
+      <div class="dashboard-header" style="display: flex; align-items: center; gap: 16px; flex-shrink: 0; margin-bottom: 24px;">
         <button id="btn-back-dash" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 14px; padding: 4px; display: flex; align-items: center; gap: 4px;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
           Voltar
         </button>
         <h1 class="page-title" style="margin: 0;">Histórico de Análises</h1>
       </div>
-      <div class="history-grid" id="history-list">
+      <div class="history-grid custom-scrollbar" id="history-list" style="flex: 1; overflow-y: auto; padding-right: 12px;">
         <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
           <div class="loading-spinner"></div>
         </div>

@@ -2,7 +2,12 @@ export function renderDashboard() {
   return `
     <div class="page-section active" id="sec-dashboard">
       <div class="dashboard-header">
-        <h1 class="page-title">PULSO Dashboard</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h1 class="page-title">PULSO Dashboard</h1>
+          <div style="font-size: 0.95rem; color: var(--text-secondary);">
+            Olá, <span style="color: var(--accent-blue);">@<span id="username">usuário</span></span>
+          </div>
+        </div>
         <div class="live-indicator">
           <div class="dot"></div> Monitorando em tempo real
         </div>

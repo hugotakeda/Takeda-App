@@ -1,4 +1,5 @@
 const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const { exec } = require('child_process');
 const path = require('path');
 const diagnostic = require('./services/diagnostic');
 const cleanup = require('./services/cleanup');
@@ -7,11 +8,30 @@ const monitor = require('./services/monitor');
 const history = require('./services/history');
 
 let mainWindow;
+let splashWindow;
 
 function createWindow() {
+  splashWindow = new BrowserWindow({
+    width: 256,
+    height: 256,
+    transparent: true,
+    frame: false,
+    alwaysOnTop: true,
+    resizable: false,
+    icon: path.join(__dirname, '..', 'assets', 'takeda-icon-1024.png'),
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+  splashWindow.loadFile(path.join(__dirname, '..', 'src', 'splash.html'));
+
   mainWindow = new BrowserWindow({
-    width: 300,
-    height: 220,
+    width: 970,
+    height: 545,
+    minWidth: 970,
+    minHeight: 545,
     resizable: false,
     frame: false,
     backgroundColor: '#12141a',
@@ -25,10 +45,6 @@ function createWindow() {
   });
 
   mainWindow.loadFile(path.join(__dirname, '..', 'src', 'index.html'));
-
-  mainWindow.once('ready-to-show', () => {
-    mainWindow.show();
-  });
 
   mainWindow.on('closed', () => {
     monitor.stop();
@@ -44,18 +60,16 @@ app.on('window-all-closed', () => {
 
 // ── Window Controls ──
 ipcMain.on('win:minimize', () => mainWindow?.minimize());
-ipcMain.on('win:maximize', () => {
-  if (mainWindow?.isMaximized()) mainWindow.unmaximize();
-  else mainWindow?.maximize();
-});
+ipcMain.on('win:maximize', () => { /* disabled */ });
 ipcMain.on('win:close', () => mainWindow?.close());
 
 ipcMain.on('app:ready', () => {
-  if (mainWindow) {
-    mainWindow.setResizable(true);
-    mainWindow.setMinimumSize(860, 600);
-    mainWindow.setSize(1000, 700);
-    mainWindow.center();
+  if (splashWindow && !splashWindow.isDestroyed()) {
+    splashWindow.close();
+    splashWindow = null;
+  }
+  if (mainWindow && !mainWindow.isVisible()) {
+    mainWindow.show();
   }
 });
 
@@ -102,6 +116,7 @@ ipcMain.handle('powerplan:current', async () => {
 ipcMain.handle('history:get', async () => {
   return await history.get();
 });
+
 
 ipcMain.handle('history:save', async (event, data) => {
   return await history.save(data);

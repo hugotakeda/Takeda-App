@@ -11,7 +11,7 @@ let lastDiagnostic = null;
 function renderDashboard() {
   container.innerHTML = `
     <div class="dashboard-header">
-      <h1 class="page-title">Bem-vindo, <span id="username">carregando...</span></h1>
+      <h1 class="page-title">Início</h1>
       <div class="live-indicator">
         <div class="dot"></div> Monitorando em tempo real
       </div>
@@ -38,7 +38,6 @@ function renderDashboard() {
 
         <button class="btn-primary" id="btn-run-diag">Executar análise</button>
         <button class="btn-secondary" id="btn-history" style="margin-bottom: 8px;">Ver histórico de análises</button>
-        <button class="btn-secondary" id="btn-power-plan">Aplicar Plano Takeda</button>
       </div>
 
       <!-- Right Column: Metrics -->
@@ -108,14 +107,20 @@ function renderDashboard() {
 
 function initDashboard() {
   window.pulso.getUsername().then(name => {
-    document.getElementById('username').textContent = name;
+    const el = document.getElementById('username');
+    if(el) el.textContent = name;
   });
+
+  // Ready app after a short delay (e.g. 2000ms) to allow the native splash window to show
+  setTimeout(() => {
+    window.pulso.ready();
+  }, 2000);
 
   // Start fast monitor loop
   window.pulso.startMonitor(1000);
   window.pulso.onMonitorData(updateMonitorData);
 
-  // Run full diagnostic to get static hardware specs
+  // Run full diagnostic in background
   window.pulso.runDiagnostic().then(d => {
     lastDiagnostic = d;
     // Populate static fields
@@ -133,12 +138,6 @@ function initDashboard() {
     document.getElementById('sys-ram').textContent = `${d.ramTotalGB} GB ${d.ramType}`;
     
     updateHealthCard(d);
-    
-    // Hide splash screen when done
-    window.pulso.ready();
-    setTimeout(() => {
-      document.getElementById('splash-screen').classList.add('hidden');
-    }, 100);
   });
 
   document.getElementById('btn-run-diag').addEventListener('click', openModal);
@@ -153,41 +152,6 @@ function initDashboard() {
       renderDashboard();
       initDashboard();
     });
-  });
-
-  document.getElementById('btn-power-plan').addEventListener('click', () => {
-    window.showConfirmModal(
-      "Confirmar aplicação", 
-      "Você deseja prosseguir e adicionar o plano de energia Takeda?\n\nLembre-se: O plano foca em desempenho máximo e pode aumentar o aquecimento e reduzir a vida útil da bateria.", 
-      async () => {
-        const btn = document.getElementById('btn-power-plan');
-        const oldText = btn.textContent;
-        btn.textContent = 'Aplicando...';
-        btn.disabled = true;
-        try {
-          const res = await window.pulso.applyPowerPlan();
-          if (res.status === 'OK' || res.status === 'AVISO') {
-            btn.textContent = 'Plano aplicado!';
-            btn.style.color = 'var(--accent-green)';
-            btn.style.borderColor = 'var(--accent-green)';
-          } else {
-            btn.textContent = 'Erro ao aplicar';
-            btn.style.color = '#f87171';
-            btn.style.borderColor = '#f87171';
-          }
-        } catch (e) {
-          btn.textContent = 'Erro ao aplicar';
-          btn.style.color = '#f87171';
-          btn.style.borderColor = '#f87171';
-        }
-        setTimeout(() => {
-          btn.textContent = oldText;
-          btn.style.color = '';
-          btn.style.borderColor = '';
-          btn.disabled = false;
-        }, 3000);
-      }
-    );
   });
 }
 
@@ -538,3 +502,4 @@ async function renderCleanTab(body, footer) {
 // Initial render
 renderDashboard();
 initDashboard();
+

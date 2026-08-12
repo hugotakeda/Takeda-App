@@ -22,6 +22,7 @@ contextBridge.exposeInMainWorld('pulso', {
 
   // Cleanup
   getCleanupSizes: () => ipcRenderer.invoke('cleanup:sizes'),
+
   executeCleanup: (items) => ipcRenderer.invoke('cleanup:execute', items),
 
   // Power Plan
