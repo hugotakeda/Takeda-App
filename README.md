@@ -1,63 +1,63 @@
 <div align="center">
   <img src="assets/takeda-icon-1024.png" alt="Takeda App Icon" width="128" />
   <h1>Takeda App</h1>
-  <p>Uma ferramenta poderosa e intuitiva para análise, limpeza e otimização do seu sistema Windows.</p>
+  <p>A powerful and intuitive tool for analyzing, cleaning, and optimizing your Windows system.</p>
 </div>
 
-## 🚀 Funcionalidades
+## 🚀 Features
 
-- **Análise de Sistema:** Identifique gargalos de desempenho e obtenha um diagnóstico preciso da saúde do seu computador.
-- **Limpeza Inteligente:** Remova arquivos temporários e lixo eletrônico para liberar espaço em disco com segurança.
-- **Otimização Extrema (Plano Takeda):** Aplique perfis de energia otimizados para extrair o máximo de desempenho do seu hardware em jogos e aplicações pesadas.
-- **Histórico de Análises:** Mantenha um registro detalhado de todas as verificações já realizadas.
+- **System Analysis:** Identify performance bottlenecks and get an accurate diagnostic of your computer's health.
+- **Smart Cleaning:** Remove temporary files and electronic junk to safely free up disk space.
+- **Extreme Optimization (Takeda Plan):** Apply optimized power profiles to extract maximum performance from your hardware in games and heavy applications.
+- **Analysis History:** Keep a detailed record of all previous scans.
 
 ---
 
 ## 📥 Download
 
-Para usar o Takeda App diretamente sem precisar compilar o código fonte, você pode baixar o executável portátil oficial:
+To use Takeda App directly without compiling the source code, you can download the official portable executable:
 
-👉 **[Baixar Takeda App (Última Versão)](https://github.com/hugotakeda/Takeda-App/releases/latest)**
+👉 **[Download Takeda App (Latest Release)](https://github.com/hugotakeda/Takeda-App/releases/latest)**
 
 ---
 
-## 💻 Como rodar o projeto localmente
+## 💻 How to Run Locally
 
-Se você deseja visualizar o código, modificar ou rodar o projeto em ambiente de desenvolvimento, certifique-se de ter o [Node.js](https://nodejs.org/) instalado em sua máquina.
+If you want to view the code, modify it, or run the project in a development environment, make sure you have [Node.js](https://nodejs.org/) installed on your machine.
 
-**1. Instale as dependências:**
+**1. Install dependencies:**
 ```bash
 npm install
 ```
 
-**2. Inicie o aplicativo em modo de desenvolvimento:**
+**2. Start the application in development mode:**
 ```bash
 npm run dev
 ```
 
-**3. Para compilar e gerar um executável portátil do Windows (.exe):**
+**3. To build and generate a Windows portable executable (.exe):**
 ```bash
 npm run build
 ```
-O arquivo final será gerado dentro da pasta `dist/`.
+The final file will be generated inside the `dist/` folder.
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
+## 🛠️ Technologies Used
 
-- **[Electron](https://www.electronjs.org/):** Framework base para a aplicação desktop.
-- **JavaScript & Node.js:** Lógica de back-end nativa e manipulação do sistema operacional.
-- **HTML5 & CSS3:** Interface customizada, sombria (Dark Mode) e extremamente responsiva.
+- **[Electron](https://www.electronjs.org/):** Base framework for the desktop application.
+- **JavaScript & Node.js:** Native back-end logic and operating system manipulation.
+- **HTML5 & CSS3:** Customized, clean dark mode interface, highly responsive.
 
 ---
 
-## 📸 Capturas de Tela
+## 📸 Screenshots
 
-### Dashboard Principal
+### Main Dashboard
 ![Dashboard](assets/dashboard.png)
 
-### Plano de Energia Takeda
-![Plano Takeda](assets/planodeenergia.png)
+### Takeda Power Plan
+![Takeda Plan](assets/planodeenergia.png)
 
-### Histórico de Análises
-![Histórico de Análises](assets/histórico.png)
+### Analysis History
+![Analysis History](assets/histórico.png)
