@@ -265,8 +265,8 @@ async function openPowerPlanModal() {
 
   content.innerHTML = `
     <div class="modal-header">
-      <div class="modal-title">\${t('power_title')}</div>
-      <div class="modal-subtitle">\${t('power_desc')}</div>
+      <div class="modal-title">${t('power_title')}</div>
+      <div class="modal-subtitle">${t('power_desc')}</div>
     </div>
     <div class="modal-body" style="padding-top: 16px;">
       <div style="display: flex; gap: 16px; align-items: flex-start; margin-bottom: 20px;">
@@ -276,7 +276,7 @@ async function openPowerPlanModal() {
           </svg>
         </div>
         <p class="text-gray" style="line-height: 1.6; margin: 0; font-size: 0.95rem;">
-          \${t('power_desc_full')}
+          ${t('power_desc_full')}
         </p>
       </div>
 
@@ -289,18 +289,18 @@ async function openPowerPlanModal() {
           </svg>
         </div>
         <div>
-          <div style="color: #f87171; font-weight: 600; margin-bottom: 4px; font-size: 0.9rem; letter-spacing: 0.3px; text-transform: uppercase;">\${t('power_warn_title')}</div>
+          <div style="color: #f87171; font-weight: 600; margin-bottom: 4px; font-size: 0.9rem; letter-spacing: 0.3px; text-transform: uppercase;">${t('power_warn_title')}</div>
           <div style="color: var(--text-secondary); font-size: 0.85rem; line-height: 1.5;">
-            \${t('power_warn_desc')}
+            ${t('power_warn_desc')}
           </div>
         </div>
       </div>
       <div class="diag-list" style="margin-bottom: 0;">
         <div class="diag-item" style="border-bottom: none;">
           <div class="diag-label">
-            <div class="diag-dot ok"></div> \${t('power_current')}
+            <div class="diag-dot ok"></div> ${t('power_current')}
           </div>
-          <div class="diag-value ok" id="current-plan-modal">\${t('loading')}</div>
+          <div class="diag-value ok" id="current-plan-modal">${t('loading')}</div>
         </div>
       </div>
       <div id="plan-msg-container" style="display: none; margin-top: 20px; padding: 12px 16px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; align-items: center; gap: 8px;">
@@ -337,7 +337,7 @@ async function openPowerPlanModal() {
       
       if (res.status === 'OK') {
         footer.style.justifyContent = 'center';
-        footer.innerHTML = `<button class="btn-modal" style="width: 100%; background: var(--accent-green-dim); color: var(--accent-green); border: 1px solid rgba(74, 222, 128, 0.2); cursor: default;"><strong style="margin-right: 6px; font-size: 1.1rem;">✓</strong> \${t('plan_success')}</button>`;
+        footer.innerHTML = `<button class="btn-modal" style="width: 100%; background: var(--accent-green-dim); color: var(--accent-green); border: 1px solid rgba(74, 222, 128, 0.2); cursor: default;"><strong style="margin-right: 6px; font-size: 1.1rem;">✓</strong> ${t('plan_success')}</button>`;
         
         try {
           const newPlan = await window.pulso.getCurrentPlan();
