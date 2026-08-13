@@ -27,7 +27,12 @@ npm run build
 - JavaScript / Node.js
 
 ## Screenshots
-*(Por favor, anexe as screenshots do aplicativo aqui)*
-- `![Dashboard](link-da-imagem)`
-- `![Plano Takeda](link-da-imagem)`
-- `![Histórico de Análises](link-da-imagem)`
+
+### Dashboard
+![Dashboard](assets/dashboard.png)
+
+### Plano Takeda
+![Plano Takeda](assets/planodeenergia.png)
+
+### Histórico de Análises
+![Histórico de Análises](assets/histórico.png)
