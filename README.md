@@ -7,6 +7,14 @@ Takeda App is a powerful and intuitive system analysis, cleaning, and optimizati
 - **Cleaning:** Remove unnecessary junk files to free up disk space safely.
 - **Optimization:** Optimize system settings for peak performance.
 
+## Download
+
+Para usar o Takeda App diretamente sem precisar compilar o código, você pode baixar o executável oficial:
+
+👉 **[Baixar Takeda App (Última Versão)](https://github.com/hugotakeda/Takeda-App/releases/latest)**
+
+---
+
 ## Installation and Usage
 
 To run this project locally, ensure you have Node.js and npm installed, then execute:
