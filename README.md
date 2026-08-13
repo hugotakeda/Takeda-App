@@ -25,3 +25,9 @@ npm run build
 ## Technologies Used
 - [Electron](https://www.electronjs.org/)
 - JavaScript / Node.js
+
+## Screenshots
+*(Por favor, anexe as screenshots do aplicativo aqui)*
+- `![Dashboard](link-da-imagem)`
+- `![Plano Takeda](link-da-imagem)`
+- `![Histórico de Análises](link-da-imagem)`

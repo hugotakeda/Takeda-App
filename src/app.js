@@ -38,6 +38,7 @@ function renderDashboard() {
 
         <button class="btn-primary" id="btn-run-diag">Executar análise</button>
         <button class="btn-secondary" id="btn-history" style="margin-bottom: 8px;">Ver histórico de análises</button>
+        <button class="btn-secondary" id="btn-powerplan" style="margin-bottom: 8px;">Plano de Energia Takeda</button>
       </div>
 
       <!-- Right Column: Metrics -->
@@ -153,6 +154,8 @@ function initDashboard() {
       initDashboard();
     });
   });
+
+  document.getElementById('btn-powerplan').addEventListener('click', openPowerPlanModal);
 }
 
 function updateHealthCard(d) {
@@ -251,6 +254,126 @@ function formatBytes(bytes) {
   const sizes = ['B', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+
+async function openPowerPlanModal() {
+  const overlay = document.getElementById('modal-overlay');
+  const content = document.getElementById('modal-content');
+  overlay.classList.add('active');
+  content.style.width = ''; // Usar largura padrao
+
+  content.innerHTML = `
+    <div class="modal-header">
+      <div class="modal-title">Plano de Energia Takeda</div>
+      <div class="modal-subtitle">Configuração de desempenho do sistema</div>
+    </div>
+    <div class="modal-body" style="padding-top: 16px;">
+      <div style="display: flex; gap: 16px; align-items: flex-start; margin-bottom: 20px;">
+        <div style="width: 48px; height: 48px; background: var(--accent-green-dim); color: var(--accent-green); border-radius: 12px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(74, 222, 128, 0.1);">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M11.5 2L3 13h8v9l9-11h-8V2z"/>
+          </svg>
+        </div>
+        <p class="text-gray" style="line-height: 1.6; margin: 0; font-size: 0.95rem;">
+          Este plano maximiza o desempenho mantendo a CPU em 100% e impedindo a suspensão do sistema. Ideal para jogos e aplicações que exigem muito do hardware.
+        </p>
+      </div>
+
+      <div style="display: flex; gap: 14px; background: rgba(248, 113, 113, 0.08); border: 1px solid rgba(248, 113, 113, 0.15); border-radius: 8px; padding: 16px; align-items: flex-start; margin-bottom: 24px;">
+        <div style="color: #f87171; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </div>
+        <div>
+          <div style="color: #f87171; font-weight: 600; margin-bottom: 4px; font-size: 0.9rem; letter-spacing: 0.3px; text-transform: uppercase;">Atenção</div>
+          <div style="color: var(--text-secondary); font-size: 0.85rem; line-height: 1.5;">
+            O aquecimento do sistema pode aumentar e a vida útil da bateria pode ser reduzida. Recomendado o uso conectado à tomada.
+          </div>
+        </div>
+      </div>
+      <div class="diag-list" style="margin-bottom: 0;">
+        <div class="diag-item" style="border-bottom: none;">
+          <div class="diag-label">
+            <div class="diag-dot ok"></div> Plano atual ativo no sistema
+          </div>
+          <div class="diag-value ok" id="current-plan-modal">Carregando...</div>
+        </div>
+      </div>
+      <div id="plan-msg-container" style="display: none; margin-top: 20px; padding: 12px 16px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; align-items: center; gap: 8px;">
+        <span id="plan-msg"></span>
+      </div>
+    </div>
+    <div class="modal-footer" id="modal-footer-plan" style="justify-content: flex-end; gap: 12px;">
+      <button class="btn-modal" id="btn-cancel-plan" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary);" onclick="closeModal()">Cancelar</button>
+      <button class="btn-modal" id="btn-apply-plan">Aplicar Plano Takeda</button>
+    </div>
+  `;
+
+  try {
+    const plan = await window.pulso.getCurrentPlan();
+    document.getElementById('current-plan-modal').textContent = plan;
+  } catch (e) {
+    document.getElementById('current-plan-modal').textContent = 'Erro ao ler';
+  }
+
+  document.getElementById('btn-apply-plan').addEventListener('click', async () => {
+    const btn = document.getElementById('btn-apply-plan');
+    const btnCancel = document.getElementById('btn-cancel-plan');
+    const msgContainer = document.getElementById('plan-msg-container');
+    const msg = document.getElementById('plan-msg');
+    const footer = document.getElementById('modal-footer-plan');
+    
+    btn.disabled = true;
+    if(btnCancel) btnCancel.disabled = true;
+    btn.textContent = 'Aplicando...';
+    msgContainer.style.display = 'none';
+    
+    try {
+      const res = await window.pulso.applyPowerPlan();
+      
+      if (res.status === 'OK') {
+        footer.style.justifyContent = 'center';
+        footer.innerHTML = `<button class="btn-modal" style="width: 100%; background: var(--accent-green-dim); color: var(--accent-green); border: 1px solid rgba(74, 222, 128, 0.2); cursor: default;"><strong style="margin-right: 6px; font-size: 1.1rem;">✓</strong> Plano aplicado com sucesso!</button>`;
+        
+        try {
+          const newPlan = await window.pulso.getCurrentPlan();
+          document.getElementById('current-plan-modal').textContent = newPlan;
+        } catch (e) {}
+
+        setTimeout(() => {
+          closeModal();
+        }, 3000);
+      } else {
+        msgContainer.style.display = 'flex';
+        if (res.status === 'AVISO') {
+          msg.innerHTML = '<strong style="font-size: 1.1rem; margin-right: 4px;">⚠</strong> ' + res.message;
+          msgContainer.style.background = 'rgba(250, 204, 21, 0.1)';
+          msgContainer.style.border = '1px solid rgba(250, 204, 21, 0.2)';
+          msgContainer.style.color = '#facc15';
+        } else {
+          msg.innerHTML = '<strong style="font-size: 1.1rem; margin-right: 4px;">✗</strong> ' + res.message;
+          msgContainer.style.background = 'rgba(248, 113, 113, 0.1)';
+          msgContainer.style.border = '1px solid rgba(248, 113, 113, 0.2)';
+          msgContainer.style.color = '#f87171';
+        }
+        btn.disabled = false;
+        if(btnCancel) btnCancel.disabled = false;
+        btn.textContent = 'Aplicar Plano Takeda';
+      }
+    } catch (e) {
+      msgContainer.style.display = 'flex';
+      msg.innerHTML = '<strong style="font-size: 1.1rem; margin-right: 4px;">✗</strong> Erro crítico ao aplicar plano.';
+      msgContainer.style.background = 'rgba(248, 113, 113, 0.1)';
+      msgContainer.style.border = '1px solid rgba(248, 113, 113, 0.2)';
+      msgContainer.style.color = '#f87171';
+      btn.disabled = false;
+      if(btnCancel) btnCancel.disabled = false;
+      btn.textContent = 'Aplicar Plano Takeda';
+    }
+  });
 }
 
 async function openModal() {

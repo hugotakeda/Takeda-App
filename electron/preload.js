@@ -32,6 +32,7 @@ contextBridge.exposeInMainWorld('pulso', {
   // History
   getHistory: () => ipcRenderer.invoke('history:get'),
   saveHistory: (data) => ipcRenderer.invoke('history:save', data),
+  clearHistory: () => ipcRenderer.invoke('history:clear'),
 
   // System
   getUsername: () => ipcRenderer.invoke('system:username'),

@@ -84,8 +84,8 @@ body {
 #btn-maximize {
   display: none !important;
 }
-.win-btn:hover { background: rgba(255, 255, 255, 0.1); color: var(--text-primary); }
-.win-btn.close:hover { background: #e81123; color: white; }
+.win-btn:hover { background: transparent; color: var(--text-primary); }
+.win-btn.close:hover { background: transparent; color: #f87171; }
 
 /* --- Content & Layout --- */
 .content {

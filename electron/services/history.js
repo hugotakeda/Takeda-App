@@ -52,4 +52,14 @@ async function save(analysisData) {
   }
 }
 
-module.exports = { get, save };
+async function clear() {
+  try {
+    await fs.writeFile(HISTORY_FILE, JSON.stringify([], null, 2), 'utf-8');
+    return [];
+  } catch (err) {
+    console.error('Error clearing history:', err);
+    return [];
+  }
+}
+
+module.exports = { get, save, clear };

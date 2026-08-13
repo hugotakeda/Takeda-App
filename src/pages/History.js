@@ -1,12 +1,20 @@
 export function renderHistory() {
   return `
     <div class="page-section active" id="sec-history" style="display: flex; flex-direction: column; height: 100%;">
-      <div class="dashboard-header" style="display: flex; align-items: center; gap: 16px; flex-shrink: 0; margin-bottom: 24px;">
-        <button id="btn-back-dash" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 14px; padding: 4px; display: flex; align-items: center; gap: 4px;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          Voltar
+      <div class="dashboard-header" style="display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <button id="btn-back-dash" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 14px; padding: 4px; display: flex; align-items: center; gap: 4px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Voltar
+          </button>
+          <h1 class="page-title" style="margin: 0;">Histórico de Análises</h1>
+        </div>
+        <button id="btn-clear-history" class="btn-secondary" style="display: none; width: fit-content; padding: 6px 16px; font-size: 0.85rem; border-color: rgba(248, 113, 113, 0.3); color: #f87171; align-items: center; gap: 8px; background: rgba(248, 113, 113, 0.05); border-radius: 8px; transition: all 0.2s;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+          Limpar Tudo
         </button>
-        <h1 class="page-title" style="margin: 0;">Histórico de Análises</h1>
       </div>
       <div class="history-grid custom-scrollbar" id="history-list" style="flex: 1; overflow-y: auto; padding-right: 12px;">
         <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
@@ -19,8 +27,45 @@ export function renderHistory() {
 
 export async function initHistory() {
   const list = document.getElementById('history-list');
+  const btnClear = document.getElementById('btn-clear-history');
+
   try {
     const history = await window.pulso.getHistory();
+    
+    if (history.length > 0) {
+      btnClear.style.display = 'inline-flex';
+      btnClear.onclick = () => {
+        if (window.showConfirmModal) {
+          window.showConfirmModal(
+            "Limpar Histórico",
+            "Tem certeza que deseja apagar todo o histórico de análises? Esta ação não pode ser desfeita.",
+            async () => {
+              if (typeof window.pulso.clearHistory !== 'function') {
+                if (window.showConfirmModal) {
+                  window.showConfirmModal(
+                    "Reinício Necessário", 
+                    "O aplicativo precisa ser reiniciado completamente (feche a janela E pare o processo no terminal) para aplicar as mudanças do sistema e habilitar a limpeza.", 
+                    () => {}
+                  );
+                }
+                return;
+              }
+              try {
+                await window.pulso.clearHistory();
+                initHistory();
+              } catch(e) {
+                console.error("Erro ao limpar:", e);
+              }
+            }
+          );
+        } else {
+          // Fallback if modal is not available
+          window.pulso.clearHistory().then(() => initHistory());
+        }
+      };
+    } else {
+      btnClear.style.display = 'none';
+    }
     
     if (history.length === 0) {
       list.innerHTML = `

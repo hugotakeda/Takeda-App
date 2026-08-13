@@ -122,6 +122,10 @@ ipcMain.handle('history:save', async (event, data) => {
   return await history.save(data);
 });
 
+ipcMain.handle('history:clear', async () => {
+  return await history.clear();
+});
+
 // ── System Info ──
 ipcMain.handle('system:username', () => {
   return require('os').userInfo().username;
