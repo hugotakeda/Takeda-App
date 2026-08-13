@@ -1,4 +1,5 @@
 import { renderHistory, initHistory } from './pages/History.js';
+import { initI18n, t } from './i18n.js';
 
 // Setup Window Controls
 document.getElementById('btn-minimize').addEventListener('click', () => window.pulso.minimize());
@@ -11,16 +12,16 @@ let lastDiagnostic = null;
 function renderDashboard() {
   container.innerHTML = `
     <div class="dashboard-header">
-      <h1 class="page-title">Início</h1>
+      <h1 class="page-title">${t('welcome')}</h1>
       <div class="live-indicator">
-        <div class="dot"></div> Monitorando em tempo real
+        <div class="dot"></div> ${t('loading')}
       </div>
     </div>
 
     <div class="dashboard-grid">
       <!-- Left Column: Health -->
       <div class="card health-card">
-        <div class="health-header">Saúde do Sistema</div>
+        <div class="health-header">${t('diag_ok')}</div>
         
         <div class="gauge-container">
           <svg class="gauge-svg" viewBox="0 0 100 100">
@@ -33,21 +34,21 @@ function renderDashboard() {
           </div>
         </div>
 
-        <div class="health-status" id="health-status">Analisando...</div>
-        <div class="health-desc" id="health-desc">Aguarde a primeira leitura</div>
+        <div class="health-status" id="health-status">${t('btn_analyzing')}</div>
+        <div class="health-desc" id="health-desc">${t('loading')}</div>
 
-        <button class="btn-primary" id="btn-run-diag">Executar análise</button>
-        <button class="btn-secondary" id="btn-history" style="margin-bottom: 8px;">Ver histórico de análises</button>
-        <button class="btn-secondary" id="btn-powerplan" style="margin-bottom: 8px;">Plano de Energia Takeda</button>
+        <button class="btn-primary" id="btn-run-diag">${t('btn_analyze')}</button>
+        <button class="btn-secondary" id="btn-history" style="margin-bottom: 8px;">${t('history_title')}</button>
+        <button class="btn-secondary" id="btn-powerplan" style="margin-bottom: 8px;">${t('power_title')}</button>
       </div>
 
       <!-- Right Column: Metrics -->
       <div class="metrics-right">
         <!-- CPU Card -->
         <div class="card metric-card">
-          <div class="card-title">Uso de CPU</div>
+          <div class="card-title">${t('system_cpu')}</div>
           <div class="card-value" id="val-cpu">--<small>%</small></div>
-          <div class="card-desc" id="desc-cpu">Coletando...</div>
+          <div class="card-desc" id="desc-cpu">${t('loading')}</div>
           <div class="chart-container chart-cpu">
             <svg class="sparkline" viewBox="0 0 100 30" preserveAspectRatio="none">
               <polygon class="sparkline-area" id="area-cpu" points="" />
@@ -58,9 +59,9 @@ function renderDashboard() {
 
         <!-- GPU Card -->
         <div class="card metric-card">
-          <div class="card-title">Uso de GPU</div>
+          <div class="card-title">${t('system_info')} (GPU)</div>
           <div class="card-value" id="val-gpu">0<small>%</small></div>
-          <div class="card-desc" id="desc-gpu">Coletando...</div>
+          <div class="card-desc" id="desc-gpu">${t('loading')}</div>
           <div class="progress-bg">
             <div class="progress-fill" id="bar-gpu" style="width: 0%"></div>
             <div class="progress-thumb" id="thumb-gpu" style="left: 0%"></div>
@@ -69,9 +70,9 @@ function renderDashboard() {
 
         <!-- RAM Card -->
         <div class="card metric-card">
-          <div class="card-title">Memória em Uso</div>
+          <div class="card-title">${t('system_mem')}</div>
           <div class="card-value" id="val-ram">-- <small>GB</small></div>
-          <div class="card-desc" id="desc-ram">Coletando...</div>
+          <div class="card-desc" id="desc-ram">${t('loading')}</div>
           <div class="chart-container chart-ram">
             <svg class="sparkline" viewBox="0 0 100 30" preserveAspectRatio="none">
               <polygon class="sparkline-area" id="area-ram" points="" />
@@ -82,17 +83,17 @@ function renderDashboard() {
 
         <!-- Latency Card -->
         <div class="card metric-card">
-          <div class="card-title">Latência de Rede</div>
+          <div class="card-title">Ping / Network</div>
           <div class="card-value" id="val-lat">-- <small>ms</small></div>
-          <div class="card-desc" id="desc-lat">Coletando...</div>
+          <div class="card-desc" id="desc-lat">${t('loading')}</div>
           <div class="badge" id="badge-lat">
-            <div class="dot" id="dot-lat"></div> <span id="text-lat">Aguardando</span>
+            <div class="dot" id="dot-lat"></div> <span id="text-lat">${t('loading')}</span>
           </div>
         </div>
 
         <!-- System Bar -->
         <div class="card system-bar">
-          <span class="label">Sistema</span>
+          <span class="label">${t('system_info')}</span>
           <span><strong id="sys-os">--</strong></span>
           <span>·</span>
           <span><strong id="sys-cpu">--</strong></span>
@@ -235,8 +236,8 @@ window.showConfirmModal = function(title, text, onConfirm) {
       <p class="text-gray" style="line-height: 1.5; white-space: pre-wrap; font-size: 0.9rem;">${text}</p>
     </div>
     <div class="modal-footer" style="justify-content: flex-end; gap: 12px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 16px;">
-      <button class="btn-modal" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary);" onclick="closeModal()">Cancelar</button>
-      <button class="btn-modal" id="btn-modal-confirm">Confirmar</button>
+      <button class="btn-modal" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary);" onclick="closeModal()">${t('btn_cancel')}</button>
+      <button class="btn-modal" id="btn-modal-confirm">${t('modal_confirm')}</button>
     </div>
   `;
 
@@ -264,8 +265,8 @@ async function openPowerPlanModal() {
 
   content.innerHTML = `
     <div class="modal-header">
-      <div class="modal-title">Plano de Energia Takeda</div>
-      <div class="modal-subtitle">Configuração de desempenho do sistema</div>
+      <div class="modal-title">\${t('power_title')}</div>
+      <div class="modal-subtitle">\${t('power_desc')}</div>
     </div>
     <div class="modal-body" style="padding-top: 16px;">
       <div style="display: flex; gap: 16px; align-items: flex-start; margin-bottom: 20px;">
@@ -275,7 +276,7 @@ async function openPowerPlanModal() {
           </svg>
         </div>
         <p class="text-gray" style="line-height: 1.6; margin: 0; font-size: 0.95rem;">
-          Este plano maximiza o desempenho mantendo a CPU em 100% e impedindo a suspensão do sistema. Ideal para jogos e aplicações que exigem muito do hardware.
+          \${t('power_desc_full')}
         </p>
       </div>
 
@@ -288,18 +289,18 @@ async function openPowerPlanModal() {
           </svg>
         </div>
         <div>
-          <div style="color: #f87171; font-weight: 600; margin-bottom: 4px; font-size: 0.9rem; letter-spacing: 0.3px; text-transform: uppercase;">Atenção</div>
+          <div style="color: #f87171; font-weight: 600; margin-bottom: 4px; font-size: 0.9rem; letter-spacing: 0.3px; text-transform: uppercase;">\${t('power_warn_title')}</div>
           <div style="color: var(--text-secondary); font-size: 0.85rem; line-height: 1.5;">
-            O aquecimento do sistema pode aumentar e a vida útil da bateria pode ser reduzida. Recomendado o uso conectado à tomada.
+            \${t('power_warn_desc')}
           </div>
         </div>
       </div>
       <div class="diag-list" style="margin-bottom: 0;">
         <div class="diag-item" style="border-bottom: none;">
           <div class="diag-label">
-            <div class="diag-dot ok"></div> Plano atual ativo no sistema
+            <div class="diag-dot ok"></div> \${t('power_current')}
           </div>
-          <div class="diag-value ok" id="current-plan-modal">Carregando...</div>
+          <div class="diag-value ok" id="current-plan-modal">\${t('loading')}</div>
         </div>
       </div>
       <div id="plan-msg-container" style="display: none; margin-top: 20px; padding: 12px 16px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; align-items: center; gap: 8px;">
@@ -328,7 +329,7 @@ async function openPowerPlanModal() {
     
     btn.disabled = true;
     if(btnCancel) btnCancel.disabled = true;
-    btn.textContent = 'Aplicando...';
+    btn.textContent = t('btn_applying');
     msgContainer.style.display = 'none';
     
     try {
@@ -336,7 +337,7 @@ async function openPowerPlanModal() {
       
       if (res.status === 'OK') {
         footer.style.justifyContent = 'center';
-        footer.innerHTML = `<button class="btn-modal" style="width: 100%; background: var(--accent-green-dim); color: var(--accent-green); border: 1px solid rgba(74, 222, 128, 0.2); cursor: default;"><strong style="margin-right: 6px; font-size: 1.1rem;">✓</strong> Plano aplicado com sucesso!</button>`;
+        footer.innerHTML = `<button class="btn-modal" style="width: 100%; background: var(--accent-green-dim); color: var(--accent-green); border: 1px solid rgba(74, 222, 128, 0.2); cursor: default;"><strong style="margin-right: 6px; font-size: 1.1rem;">✓</strong> \${t('plan_success')}</button>`;
         
         try {
           const newPlan = await window.pulso.getCurrentPlan();
@@ -361,17 +362,17 @@ async function openPowerPlanModal() {
         }
         btn.disabled = false;
         if(btnCancel) btnCancel.disabled = false;
-        btn.textContent = 'Aplicar Plano Takeda';
+        btn.textContent = t('btn_apply_plan');
       }
     } catch (e) {
       msgContainer.style.display = 'flex';
-      msg.innerHTML = '<strong style="font-size: 1.1rem; margin-right: 4px;">✗</strong> Erro crítico ao aplicar plano.';
+      msg.innerHTML = '<strong style="font-size: 1.1rem; margin-right: 4px;">✗</strong> ' + t('plan_error');
       msgContainer.style.background = 'rgba(248, 113, 113, 0.1)';
       msgContainer.style.border = '1px solid rgba(248, 113, 113, 0.2)';
       msgContainer.style.color = '#f87171';
       btn.disabled = false;
       if(btnCancel) btnCancel.disabled = false;
-      btn.textContent = 'Aplicar Plano Takeda';
+      btn.textContent = t('btn_apply_plan');
     }
   });
 }
@@ -623,6 +624,9 @@ async function renderCleanTab(body, footer) {
 }
 
 // Initial render
-renderDashboard();
-initDashboard();
+(async () => {
+  await initI18n();
+  renderDashboard();
+  initDashboard();
+})();
 

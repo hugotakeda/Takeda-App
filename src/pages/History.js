@@ -1,3 +1,5 @@
+import { t } from '../i18n.js';
+
 export function renderHistory() {
   return `
     <div class="page-section active" id="sec-history" style="display: flex; flex-direction: column; height: 100%;">
@@ -5,15 +7,14 @@ export function renderHistory() {
         <div style="display: flex; align-items: center; gap: 16px;">
           <button id="btn-back-dash" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 14px; padding: 4px; display: flex; align-items: center; gap: 4px;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-            Voltar
           </button>
-          <h1 class="page-title" style="margin: 0;">Histórico de Análises</h1>
+          <h1 class="page-title" style="margin: 0;">\${t('history_title')}</h1>
         </div>
         <button id="btn-clear-history" class="btn-secondary" style="display: none; width: fit-content; padding: 6px 16px; font-size: 0.85rem; border-color: rgba(248, 113, 113, 0.3); color: #f87171; align-items: center; gap: 8px; background: rgba(248, 113, 113, 0.05); border-radius: 8px; transition: all 0.2s;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" stroke-linecap="round" stroke-linejoin="round"></path>
           </svg>
-          Limpar Tudo
+          \${t('btn_clear_history')}
         </button>
       </div>
       <div class="history-grid custom-scrollbar" id="history-list" style="flex: 1; overflow-y: auto; padding-right: 12px;">
@@ -37,14 +38,14 @@ export async function initHistory() {
       btnClear.onclick = () => {
         if (window.showConfirmModal) {
           window.showConfirmModal(
-            "Limpar Histórico",
-            "Tem certeza que deseja apagar todo o histórico de análises? Esta ação não pode ser desfeita.",
+            t('modal_history_title'),
+            t('modal_history_desc'),
             async () => {
               if (typeof window.pulso.clearHistory !== 'function') {
                 if (window.showConfirmModal) {
                   window.showConfirmModal(
-                    "Reinício Necessário", 
-                    "O aplicativo precisa ser reiniciado completamente (feche a janela E pare o processo no terminal) para aplicar as mudanças do sistema e habilitar a limpeza.", 
+                    t('modal_restart_title'), 
+                    t('modal_restart_desc'), 
                     () => {}
                   );
                 }
@@ -70,7 +71,7 @@ export async function initHistory() {
     if (history.length === 0) {
       list.innerHTML = `
         <div style="text-align: center; padding: 40px; color: var(--text-secondary); background: var(--bg-panel); border-radius: 12px;">
-          Nenhuma análise encontrada no histórico.<br>Execute uma análise na Dashboard primeiro.
+          \${t('history_empty')}
         </div>
       `;
       return;

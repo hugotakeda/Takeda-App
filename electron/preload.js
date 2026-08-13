@@ -36,4 +36,5 @@ contextBridge.exposeInMainWorld('pulso', {
 
   // System
   getUsername: () => ipcRenderer.invoke('system:username'),
+  getLocale: () => ipcRenderer.invoke('system:locale'),
 });

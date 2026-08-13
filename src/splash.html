@@ -46,7 +46,7 @@
   <div class="container">
     <div class="spinner"></div>
     <p style="color: #888888; margin-top: 8px; font-size: 0.95rem;">
-      Olá, <span style="color: #51a2ff; font-weight: 600;">@<span id="username">usuário</span></span>
+      <span id="greeting">Hello, </span><span style="color: #51a2ff; font-weight: 600;">@<span id="username">user</span></span>
     </p>
   </div>
 
@@ -56,6 +56,15 @@
         const el = document.getElementById('username');
         if(el) el.textContent = name;
       }).catch(err => console.error(err));
+    }
+    if (window.pulso && window.pulso.getLocale) {
+      window.pulso.getLocale().then(locale => {
+        if (locale && locale.toLowerCase() === 'pt-br') {
+          document.getElementById('greeting').textContent = 'Olá, ';
+        } else {
+          document.getElementById('greeting').textContent = 'Hello, ';
+        }
+      });
     }
   </script>
 </body>

@@ -130,3 +130,7 @@ ipcMain.handle('history:clear', async () => {
 ipcMain.handle('system:username', () => {
   return require('os').userInfo().username;
 });
+
+ipcMain.handle('system:locale', () => {
+  return app.getLocale();
+});
