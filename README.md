@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/takeda-icon-1024.png" alt="Takeda App Icon" width="128" />
+  <img src="assets/takeda-icon-1024.png?v=2" alt="Takeda App Icon" width="128" />
   <h1>Takeda App</h1>
   <p>A powerful and intuitive tool for analyzing, cleaning, and optimizing your Windows system.</p>
 </div>

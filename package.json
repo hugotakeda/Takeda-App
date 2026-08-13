@@ -33,7 +33,7 @@
     ],
     "win": {
       "target": "portable",
-      "icon": "assets/takeda-icon-1024.png"
+      "icon": "assets/takeda-icon.ico"
     },
     "nsis": {
       "oneClick": true,
