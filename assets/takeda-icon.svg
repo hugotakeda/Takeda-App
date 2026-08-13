@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#141B24"/>
+      <stop offset="100%" stop-color="#080B0F"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="88%" r="60%">
+      <stop offset="0%" stop-color="#2DD4A7" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#2DD4A7" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#54E7B3"/>
+      <stop offset="45%" stop-color="#3FCFC4"/>
+      <stop offset="100%" stop-color="#3F8CE8"/>
+    </linearGradient>
+    <radialGradient id="dotGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#8FF6D2" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#8FF6D2" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="letter" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E7ECF2"/>
+    </linearGradient>
+  </defs>
+
+  <!-- background squircle -->
+  <rect x="0" y="0" width="1024" height="1024" rx="224" ry="224" fill="url(#bg)"/>
+  <rect x="0" y="0" width="1024" height="1024" rx="224" ry="224" fill="url(#glow)"/>
+
+  <!-- faint track ring -->
+  <circle cx="512" cy="512" r="336" fill="none" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="46"/>
+
+  <!-- progress gauge arc -->
+  <path d="M 512.00 176.00 A 336 336 0 1 1 182.17 447.89" fill="none" stroke="url(#ring)" stroke-width="46" stroke-linecap="round"/>
+
+  <!-- tip glow + dot -->
+  <circle cx="182.17" cy="447.89" r="70" fill="url(#dotGlow)"/>
+  <circle cx="182.17" cy="447.89" r="27" fill="#8FF6D2"/>
+
+  <!-- T monogram -->
+  <g>
+    <rect x="362" y="342" width="300" height="76" rx="24" fill="url(#letter)"/>
+    <rect x="474" y="404" width="76" height="282" rx="20" fill="url(#letter)"/>
+  </g>
+</svg>
