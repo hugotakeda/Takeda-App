@@ -129,10 +129,15 @@ async function executeCleanup() {
 
   try {
     const res = await window.pulso.executeCleanup(items);
-    alert(`Limpeza concluída!\nEspaço liberado: ${formatBytes(res.totalFreed)}\n\nNota: Alguns arquivos não puderam ser removidos pois estão em uso pelo sistema.`);
-    loadSizes();
+    window.showAlertModal(
+      'Limpeza concluída!',
+      `Espaço liberado: ${formatBytes(res.totalFreed)}\n\nNota: Alguns arquivos não puderam ser removidos pois estão em uso pelo sistema.`,
+      () => {
+        loadSizes();
+      }
+    );
   } catch (e) {
-    alert('Erro ao executar limpeza.');
+    window.showAlertModal('Erro', 'Erro ao executar limpeza.');
   } finally {
     btn.textContent = 'Executar Limpeza';
   }
