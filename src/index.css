@@ -368,6 +368,7 @@ body {
   border: 1px solid var(--border-color);
   border-radius: 8px;
   width: 600px;
+  height: 540px;
   max-height: 85vh;
   display: flex;
   flex-direction: column;

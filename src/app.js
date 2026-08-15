@@ -226,13 +226,12 @@ window.showConfirmModal = function(title, text, onConfirm) {
   const overlay = document.getElementById('modal-overlay');
   const content = document.getElementById('modal-content');
   overlay.classList.add('active');
-  content.style.width = '420px';
 
   content.innerHTML = `
     <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
       <div class="modal-title" style="font-size: 1.25rem;">${title}</div>
     </div>
-    <div class="modal-body" style="padding-top: 16px; padding-bottom: 24px;">
+    <div class="modal-body" style="padding-top: 16px; padding-bottom: 24px; display: flex; flex-direction: column; justify-content: center;">
       <p class="text-gray" style="line-height: 1.5; white-space: pre-wrap; font-size: 0.9rem;">${text}</p>
     </div>
     <div class="modal-footer" style="justify-content: flex-end; gap: 12px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 16px;">
@@ -251,13 +250,12 @@ window.showAlertModal = function(title, text, onClose) {
   const overlay = document.getElementById('modal-overlay');
   const content = document.getElementById('modal-content');
   overlay.classList.add('active');
-  content.style.width = '420px';
 
   content.innerHTML = `
     <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
       <div class="modal-title" style="font-size: 1.15rem;">${title}</div>
     </div>
-    <div class="modal-body" style="padding-top: 12px; padding-bottom: 12px; overflow-y: hidden;">
+    <div class="modal-body" style="padding-top: 12px; padding-bottom: 12px; overflow-y: hidden; display: flex; flex-direction: column; justify-content: center;">
       <p style="color: var(--text-secondary); line-height: 1.4; white-space: pre-wrap; font-size: 0.9rem; margin: 0;">${text}</p>
     </div>
     <div class="modal-footer" style="justify-content: flex-end; border-top: none; padding-top: 0; padding-bottom: 16px;">
@@ -285,7 +283,6 @@ async function openPowerPlanModal() {
   const overlay = document.getElementById('modal-overlay');
   const content = document.getElementById('modal-content');
   overlay.classList.add('active');
-  content.style.width = ''; // Usar largura padrao
 
   content.innerHTML = `
     <div class="modal-header">
@@ -405,7 +402,6 @@ async function openModal() {
   const overlay = document.getElementById('modal-overlay');
   const content = document.getElementById('modal-content');
   overlay.classList.add('active');
-  content.style.width = ''; // Restaurar largura padrao (600px via css)
 
   content.innerHTML = `
     <div class="modal-header">
@@ -637,7 +633,7 @@ async function renderCleanTab(body, footer) {
       document.getElementById('clean-footer-text').style.display = 'none';
       
       body.innerHTML = `
-        <div style="text-align:center; padding: 10px 20px;">
+        <div style="text-align:center; padding: 10px 20px; display: flex; flex-direction: column; justify-content: center; height: 100%;">
           <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 12px;">
             <div style="color: var(--accent-green); font-size: 2rem;">✓</div>
             <h2 style="color: var(--text-primary); font-size: 1.25rem; margin: 0;">Limpeza concluída!</h2>
