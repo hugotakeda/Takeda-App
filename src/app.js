@@ -610,6 +610,7 @@ async function renderCleanTab(body, footer) {
     try {
       const res = await window.pulso.executeCleanup(items);
       btn.textContent = 'Limpeza concluída com sucesso!';
+      alert(`Limpeza concluída!\nEspaço liberado: ${formatBytes(res.totalFreed)}\n\nNota: Alguns arquivos não puderam ser removidos pois estão em uso pelo sistema.`);
       setTimeout(() => {
         renderCleanTab(body, footer); // reload
       }, 2000);
