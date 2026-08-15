@@ -255,13 +255,13 @@ window.showAlertModal = function(title, text, onClose) {
 
   content.innerHTML = `
     <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
-      <div class="modal-title" style="font-size: 1.25rem;">${title}</div>
+      <div class="modal-title" style="font-size: 1.15rem;">${title}</div>
     </div>
-    <div class="modal-body" style="padding-top: 16px; padding-bottom: 24px;">
-      <p class="text-gray" style="line-height: 1.5; white-space: pre-wrap; font-size: 0.9rem;">${text}</p>
+    <div class="modal-body" style="padding-top: 12px; padding-bottom: 12px; overflow-y: hidden;">
+      <p style="color: var(--text-secondary); line-height: 1.4; white-space: pre-wrap; font-size: 0.9rem; margin: 0;">${text}</p>
     </div>
-    <div class="modal-footer" style="justify-content: flex-end; gap: 12px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 16px;">
-      <button class="btn-modal" id="btn-modal-ok">OK</button>
+    <div class="modal-footer" style="justify-content: flex-end; border-top: none; padding-top: 0; padding-bottom: 16px;">
+      <button class="btn-modal" id="btn-modal-ok" style="padding: 8px 20px;">OK</button>
     </div>
   `;
 
@@ -637,12 +637,14 @@ async function renderCleanTab(body, footer) {
       document.getElementById('clean-footer-text').style.display = 'none';
       
       body.innerHTML = `
-        <div style="text-align:center; padding: 20px 40px;">
-          <div style="color: var(--accent-green); font-size: 3rem; margin-bottom: 16px;">✓</div>
-          <h2 style="color: var(--text-primary); margin-bottom: 8px;">Limpeza concluída!</h2>
-          <p style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 24px;">Espaço liberado: <strong style="color: var(--text-primary);">${formatBytes(res.totalFreed)}</strong></p>
-          <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 8px; font-size: 0.9rem; color: var(--text-gray); text-align: left; line-height: 1.5;">
-            <strong>Nota:</strong> Alguns arquivos temporários permaneceram pois estão atualmente em uso pelo Windows ou outros programas.
+        <div style="text-align:center; padding: 10px 20px;">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 12px;">
+            <div style="color: var(--accent-green); font-size: 2rem;">✓</div>
+            <h2 style="color: var(--text-primary); font-size: 1.25rem; margin: 0;">Limpeza concluída!</h2>
+          </div>
+          <p style="color: var(--text-secondary); font-size: 1rem; margin-bottom: 16px;">Espaço liberado: <strong style="color: var(--text-primary);">${formatBytes(res.totalFreed)}</strong></p>
+          <div style="background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 6px; font-size: 0.85rem; color: var(--text-secondary); text-align: left; line-height: 1.4;">
+            <strong>Nota:</strong> Alguns arquivos em uso pelo sistema não puderam ser removidos.
           </div>
         </div>
       `;
