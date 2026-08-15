@@ -646,7 +646,7 @@ async function renderCleanTab(body, footer) {
           </div>
         </div>
       `;
-      footer.innerHTML = \`<button class="btn-modal" id="btn-back-clean">Voltar</button>\`;
+      footer.innerHTML = `<button class="btn-modal" id="btn-back-clean">Voltar</button>`;
       document.getElementById('btn-back-clean').addEventListener('click', () => {
         renderCleanTab(body, footer);
       });
