@@ -97,16 +97,19 @@ async function emptyDir(dirPath) {
     const files = await fs.readdir(dirPath, { withFileTypes: true });
     for (const file of files) {
       const fullPath = path.join(dirPath, file.name);
-      try {
-        if (file.isDirectory()) {
-          freed += await getDirSize(fullPath);
-          await fs.rm(fullPath, { recursive: true, force: true });
-        } else {
+      if (file.isDirectory()) {
+        freed += await emptyDir(fullPath);
+        try {
+          await fs.rmdir(fullPath);
+        } catch (err) {}
+      } else {
+        try {
           const stats = await fs.stat(fullPath);
-          freed += stats.size;
+          const size = stats.size;
           await fs.unlink(fullPath);
-        }
-      } catch (err) {}
+          freed += size;
+        } catch (err) {}
+      }
     }
   } catch (err) {}
   return freed;
