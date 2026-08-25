@@ -12,12 +12,18 @@ document.getElementById('btn-close').addEventListener('click', () => window.puls
 const container = document.getElementById('page-container');
 let lastDiagnostic = null;
 
-function renderDashboard(user, sysUsername) {
+let currentUser = null;
+let currentSysUsername = null;
+
+function renderDashboard(user = currentUser, sysUsername = currentSysUsername) {
+  currentUser = user;
+  currentSysUsername = sysUsername;
+
   container.innerHTML = `
     <div class="dashboard-header">
       <div style="display:flex; align-items:center; gap: 12px;">
-        <img src="${user?.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}" alt="Avatar" style="width: 32px; height: 32px; border-radius: 50%;">
-        <h1 class="page-title">Bem-vindo, <span style="color:var(--accent-blue)">@${sysUsername || user?.username || 'Usuário'}</span>!</h1>
+        <img src="${currentUser?.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}" alt="Avatar" style="width: 32px; height: 32px; border-radius: 50%;">
+        <h1 class="page-title">Bem-vindo, <span style="color:var(--accent-blue)">@${currentSysUsername || currentUser?.username || 'Usuário'}</span>!</h1>
       </div>
       <div style="display:flex; gap:12px; align-items:center;">
         <div class="live-indicator">
