@@ -199,8 +199,3 @@ O arquivo final será gerado na pasta `dist/`.
 
 Este projeto está licenciado sob a [MIT License](LICENSE).
 
----
-
-<div align="center">
-  <p>Desenvolvido com ❤️ por <strong><a href="https://github.com/hugotakeda">HonestTech</a></strong></p>
-</div>
