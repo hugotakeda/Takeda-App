@@ -2,6 +2,7 @@ import { renderHistory, initHistory } from './pages/History.js';
 import { initI18n, t } from './i18n.js';
 import { renderLogin } from './pages/Login.js';
 import { resumeSession, logout } from './auth.js';
+import { renderApps, initApps } from './pages/Apps.js';
 
 // Setup Window Controls
 document.getElementById('btn-minimize').addEventListener('click', () => window.pulso.minimize());
@@ -48,6 +49,7 @@ function renderDashboard(user, sysUsername) {
         <button class="btn-primary" id="btn-run-diag">${t('btn_analyze')}</button>
         <button class="btn-secondary" id="btn-history" style="margin-bottom: 8px;">${t('history_title')}</button>
         <button class="btn-secondary" id="btn-powerplan" style="margin-bottom: 8px;">${t('power_title')}</button>
+        <button class="btn-secondary" id="btn-apps" style="margin-bottom: 8px;">Instalador de Apps</button>
       </div>
 
       <!-- Right Column: Metrics -->
@@ -157,6 +159,18 @@ function initDashboard() {
     window.pulso.removeMonitorListener();
     container.innerHTML = renderHistory();
     initHistory();
+    
+    document.getElementById('btn-back-dash').addEventListener('click', () => {
+      renderDashboard();
+      initDashboard();
+    });
+  });
+
+  document.getElementById('btn-apps').addEventListener('click', () => {
+    window.pulso.stopMonitor();
+    window.pulso.removeMonitorListener();
+    container.innerHTML = renderApps();
+    initApps();
     
     document.getElementById('btn-back-dash').addEventListener('click', () => {
       renderDashboard();

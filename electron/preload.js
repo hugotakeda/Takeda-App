@@ -34,6 +34,15 @@ contextBridge.exposeInMainWorld('pulso', {
   applyTweak: (id, enable) => ipcRenderer.invoke('tweaks:apply', id, enable),
   getTweaksStatus: () => ipcRenderer.invoke('tweaks:status'),
 
+  // Apps
+  installApps: (appIds) => ipcRenderer.invoke('apps:install', appIds),
+  onAppsProgress: (callback) => {
+    ipcRenderer.on('apps:progress', (_, data) => callback(data));
+  },
+  removeAppsListener: () => {
+    ipcRenderer.removeAllListeners('apps:progress');
+  },
+
   // History
   getHistory: () => ipcRenderer.invoke('history:get'),
   saveHistory: (data) => ipcRenderer.invoke('history:save', data),

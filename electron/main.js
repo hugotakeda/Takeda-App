@@ -7,6 +7,7 @@ const powerplan = require('./services/powerplan');
 const monitor = require('./services/monitor');
 const history = require('./services/history');
 const tweaks = require('./services/tweaks');
+const apps = require('./services/apps');
 
 let mainWindow;
 let splashWindow;
@@ -117,6 +118,15 @@ ipcMain.handle('tweaks:apply', async (event, tweakId, enable) => {
 
 ipcMain.handle('tweaks:status', async () => {
   return await tweaks.getStatus();
+});
+
+// ── Apps ──
+ipcMain.handle('apps:install', async (event, appIds) => {
+  return await apps.installApps(appIds, (progress) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('apps:progress', progress);
+    }
+  });
 });
 
 // ── History ──
