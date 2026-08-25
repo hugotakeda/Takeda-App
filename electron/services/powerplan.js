@@ -12,14 +12,19 @@ function runPS(script) {
 }
 
 async function apply(powFile) {
+  // Normalize to backslashes and escape for PowerShell single-quoted strings
+  const safePath = powFile.replace(/\//g, '\\').replace(/'/g, "''");
+  console.log('[PowerPlan] Caminho do arquivo .pow:', safePath);
+
   const script = `
     $ErrorActionPreference = 'SilentlyContinue'
-    if (-not (Test-Path -LiteralPath '${powFile}')) {
-      Write-Output "ERRO|Arquivo .pow nao encontrado"
+    $powFile = '${safePath}'
+    if (-not (Test-Path -LiteralPath $powFile)) {
+      Write-Output "ERRO|Arquivo .pow nao encontrado em: $powFile"
       exit
     }
     
-    $importOut = powercfg /import '${powFile}' 2>&1 | Out-String
+    $importOut = powercfg /import "$powFile" 2>&1 | Out-String
     $guid = [regex]::Match($importOut, '([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})').Value
     
     if ([string]::IsNullOrWhiteSpace($guid)) {
