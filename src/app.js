@@ -1,5 +1,7 @@
 import { renderHistory, initHistory } from './pages/History.js';
 import { initI18n, t } from './i18n.js';
+import { renderLogin } from './pages/Login.js';
+import { resumeSession, logout } from './auth.js';
 
 // Setup Window Controls
 document.getElementById('btn-minimize').addEventListener('click', () => window.pulso.minimize());
@@ -9,12 +11,18 @@ document.getElementById('btn-close').addEventListener('click', () => window.puls
 const container = document.getElementById('page-container');
 let lastDiagnostic = null;
 
-function renderDashboard() {
+function renderDashboard(user, sysUsername) {
   container.innerHTML = `
     <div class="dashboard-header">
-      <h1 class="page-title">${t('welcome')}</h1>
-      <div class="live-indicator">
-        <div class="dot"></div> ${t('loading')}
+      <div style="display:flex; align-items:center; gap: 12px;">
+        <img src="${user?.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}" alt="Avatar" style="width: 32px; height: 32px; border-radius: 50%;">
+        <h1 class="page-title">Bem-vindo, <span style="color:var(--accent-blue)">@${sysUsername || user?.username || 'Usuário'}</span>!</h1>
+      </div>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <div class="live-indicator">
+          <div class="dot" id="header-live-dot"></div> <span id="header-live-text">${t('loading')}</span>
+        </div>
+        <button id="btn-logout" class="btn-secondary" style="margin: 0; padding: 4px 12px;">Sair</button>
       </div>
     </div>
 
@@ -157,6 +165,10 @@ function initDashboard() {
   });
 
   document.getElementById('btn-powerplan').addEventListener('click', openPowerPlanModal);
+  document.getElementById('btn-logout').addEventListener('click', async () => {
+    await logout();
+    window.location.reload();
+  });
 }
 
 function updateHealthCard(d) {
@@ -184,6 +196,12 @@ function updateHealthCard(d) {
 }
 
 function updateMonitorData(d) {
+  const liveText = document.getElementById('header-live-text');
+  if (liveText && liveText.textContent !== 'Ao vivo') {
+    liveText.textContent = 'Ao vivo';
+    document.getElementById('header-live-dot').style.backgroundColor = 'var(--accent-green)';
+  }
+
   document.getElementById('val-cpu').innerHTML = `${d.cpu}<small>%</small>`;
   document.getElementById('val-ram').innerHTML = `${d.ramUsed.toFixed(1)} <small>GB</small>`;
   document.getElementById('desc-ram').textContent = `de ${d.ramTotal} GB · ${d.ramPct}%`;
@@ -658,10 +676,51 @@ async function renderCleanTab(body, footer) {
   });
 }
 
+function showSplashOverlay(username, callback) {
+  if (window.pulso && window.pulso.resize) window.pulso.resize(256, 256);
+  const overlay = document.createElement('div');
+  overlay.innerHTML = `
+    <div style="position:fixed;inset:0;background:var(--bg-main);z-index:99999;display:flex;flex-direction:column;justify-content:center;align-items:center;animation:fadeIn 0.3s ease-out;">
+      <div class="loading-spinner"></div>
+      <p style="color:var(--text-secondary);margin-top:16px;font-size:0.95rem;">
+        Olá, <strong style="color:var(--accent-blue);">@${username}</strong>
+      </p>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  
+  setTimeout(() => {
+    overlay.style.animation = 'fadeOut 0.3s ease-in';
+    setTimeout(() => {
+      overlay.remove();
+      if (window.pulso && window.pulso.resize) window.pulso.resize(970, 545);
+      callback();
+    }, 280);
+  }, 2000);
+}
+
 // Initial render
 (async () => {
+  const style = document.createElement('style');
+  style.innerHTML = '@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } } @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }';
+  document.head.appendChild(style);
+
   await initI18n();
-  renderDashboard();
-  initDashboard();
+
+  setTimeout(() => {
+    if (window.pulso && window.pulso.ready) window.pulso.ready();
+  }, 1000);
+
+  const session = await resumeSession();
+  renderLogin(container, session, async (user) => {
+    let sysUsername = user.username;
+    if (window.pulso && window.pulso.getUsername) {
+      sysUsername = await window.pulso.getUsername();
+    }
+    showSplashOverlay(sysUsername, () => {
+      renderDashboard(user, sysUsername);
+      initDashboard();
+    });
+  });
 })();
 

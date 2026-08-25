@@ -121,6 +121,7 @@ body {
   padding: 6px 12px;
   border-radius: 20px;
   border: 1px solid var(--border-color);
+  white-space: nowrap;
 }
 
 .dot {

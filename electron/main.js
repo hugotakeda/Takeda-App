@@ -6,26 +6,12 @@ const cleanup = require('./services/cleanup');
 const powerplan = require('./services/powerplan');
 const monitor = require('./services/monitor');
 const history = require('./services/history');
+const tweaks = require('./services/tweaks');
 
 let mainWindow;
 let splashWindow;
 
 function createWindow() {
-  splashWindow = new BrowserWindow({
-    width: 256,
-    height: 256,
-    transparent: true,
-    frame: false,
-    alwaysOnTop: true,
-    resizable: false,
-    icon: path.join(__dirname, '..', 'assets', 'takeda-icon-1024.png'),
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: true,
-      nodeIntegration: false,
-    },
-  });
-  splashWindow.loadFile(path.join(__dirname, '..', 'src', 'splash.html'));
 
   mainWindow = new BrowserWindow({
     width: 970,
@@ -46,6 +32,10 @@ function createWindow() {
 
   mainWindow.loadFile(path.join(__dirname, '..', 'src', 'index.html'));
 
+  mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
+    console.log(`[Renderer] ${message} (${sourceId}:${line})`);
+  });
+
   mainWindow.on('closed', () => {
     monitor.stop();
     mainWindow = null;
@@ -62,6 +52,14 @@ app.on('window-all-closed', () => {
 ipcMain.on('win:minimize', () => mainWindow?.minimize());
 ipcMain.on('win:maximize', () => { /* disabled */ });
 ipcMain.on('win:close', () => mainWindow?.close());
+ipcMain.on('win:resize', (event, width, height) => {
+  if (mainWindow) {
+    // Allow window to shrink by updating minimum size first
+    mainWindow.setMinimumSize(Math.min(width, 970), Math.min(height, 545));
+    mainWindow.setSize(width, height);
+    mainWindow.center();
+  }
+});
 
 ipcMain.on('app:ready', () => {
   if (splashWindow && !splashWindow.isDestroyed()) {
@@ -112,6 +110,15 @@ ipcMain.handle('powerplan:current', async () => {
   return await powerplan.getCurrent();
 });
 
+// ── Tweaks ──
+ipcMain.handle('tweaks:apply', async (event, tweakId, enable) => {
+  return await tweaks.apply(tweakId, enable);
+});
+
+ipcMain.handle('tweaks:status', async () => {
+  return await tweaks.getStatus();
+});
+
 // ── History ──
 ipcMain.handle('history:get', async () => {
   return await history.get();
@@ -134,3 +141,28 @@ ipcMain.handle('system:username', () => {
 ipcMain.handle('system:locale', () => {
   return app.getLocale();
 });
+
+// ── Auth ──
+const { getHwid } = require('./auth/hwid');
+const { saveSession, loadSession, clearSession } = require('./auth/secure-store');
+const { waitForDiscordRedirect, newState } = require('./auth/oauth-server');
+const { OAUTH_LOOPBACK_PORT } = require('./auth/shared-config');
+
+ipcMain.handle('auth:get-hwid', () => getHwid());
+
+ipcMain.handle('auth:login-with-discord', async (_evt, { clientId }) => {
+  const state = newState();
+  const redirectUri = encodeURIComponent(`http://127.0.0.1:${OAUTH_LOOPBACK_PORT}/callback`);
+  const authorizeUrl =
+    `https://discord.com/oauth2/authorize?client_id=${encodeURIComponent(clientId)}` +
+    `&response_type=code&scope=identify&redirect_uri=${redirectUri}&state=${state}`;
+
+  const redirectPromise = waitForDiscordRedirect(state);
+  await shell.openExternal(authorizeUrl);
+  const code = await redirectPromise;
+  return { code };
+});
+
+ipcMain.handle('auth:save-session', (_evt, token) => saveSession(token));
+ipcMain.handle('auth:load-session', () => loadSession());
+ipcMain.handle('auth:clear-session', () => clearSession());
