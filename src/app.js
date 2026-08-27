@@ -456,6 +456,8 @@ function initUpdateListeners() {
 window.showConfirmModal = function(title, text, onConfirm) {
   const overlay = document.getElementById('modal-overlay');
   const content = document.getElementById('modal-content');
+  content.style.width = '480px';
+  content.style.height = 'auto';
   overlay.classList.add('active');
 
   content.innerHTML = `
@@ -480,6 +482,8 @@ window.showConfirmModal = function(title, text, onConfirm) {
 window.showAlertModal = function(title, text, onClose) {
   const overlay = document.getElementById('modal-overlay');
   const content = document.getElementById('modal-content');
+  content.style.width = '400px';
+  content.style.height = 'auto';
   overlay.classList.add('active');
 
   content.innerHTML = `
