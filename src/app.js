@@ -404,14 +404,14 @@ function showUpdateBanner(state, info = {}) {
 
     document.body.appendChild(banner);
 
-    // Bind actions
-    const dismissBtn = document.getElementById('btn-update-dismiss');
+    // Bind actions using querySelector on the banner to avoid ID collisions if multiple banners exist
+    const dismissBtn = banner.querySelector('#btn-update-dismiss');
     if (dismissBtn) dismissBtn.addEventListener('click', removeUpdateBanner);
 
-    const laterBtn = document.getElementById('btn-update-later');
+    const laterBtn = banner.querySelector('#btn-update-later');
     if (laterBtn) laterBtn.addEventListener('click', removeUpdateBanner);
 
-    const downloadBtn = document.getElementById('btn-update-download');
+    const downloadBtn = banner.querySelector('#btn-update-download');
     if (downloadBtn) {
       downloadBtn.addEventListener('click', () => {
         showUpdateBanner('downloading', { percent: 0 });
@@ -419,7 +419,7 @@ function showUpdateBanner(state, info = {}) {
       });
     }
 
-    const installBtn = document.getElementById('btn-update-install');
+    const installBtn = banner.querySelector('#btn-update-install');
     if (installBtn) {
       installBtn.addEventListener('click', () => {
         window.pulso.installUpdate();
