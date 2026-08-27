@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.4] - 2026-08-27
+
+### ✨ O que há de novo no Instalador
+- **Novo Assistente de Instalação**: Abandonamos a instalação de "1 clique" que ocorria de forma invisível. Agora, o aplicativo conta com um instalador tradicional passo-a-passo (com telas de Avançar e opção para mudar a pasta).
+- **Atalho na Área de Trabalho**: Durante a instalação, agora existe uma opção nativa e ativada por padrão para criar o atalho do aplicativo diretamente na sua Área de Trabalho (Desktop), facilitando muito o acesso ao app no dia a dia.
+- **Menu Iniciar**: A criação do atalho no Menu Iniciar do Windows foi otimizada para garantir que o app sempre apareça nas suas buscas nativas.
+
 ## [1.0.3] - 2026-08-27
 
 ### ✨ Melhorias e Otimizações Visuais
