@@ -579,59 +579,78 @@ async function openPowerPlanModal() {
   }
 
   document.getElementById('btn-apply-plan').addEventListener('click', async () => {
-    const btn = document.getElementById('btn-apply-plan');
-    const btnCancel = document.getElementById('btn-cancel-plan');
-    const msgContainer = document.getElementById('plan-msg-container');
-    const msg = document.getElementById('plan-msg');
-    const footer = document.getElementById('modal-footer-plan');
+    const content = document.getElementById('modal-content');
     
-    btn.disabled = true;
-    if(btnCancel) btnCancel.disabled = true;
-    btn.textContent = t('btn_applying');
-    msgContainer.style.display = 'none';
+    // Travar a altura atual para evitar que o modal mude de tamanho
+    const currentHeight = content.offsetHeight;
+    content.style.height = currentHeight + 'px';
     
+    // Inject animation (com os pontinhos pulando igual ao lixo)
+    content.innerHTML = `
+      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 40px 20px; text-align: center;">
+        <div class="power-anim-container">
+          <svg class="power-anim-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+        </div>
+        <div class="power-anim-text" style="margin-bottom: 16px;">Injetando Takeda Power</div>
+        <div class="clean-anim-dots">
+          <div class="clean-dot" style="background: #FFD700;"></div>
+          <div class="clean-dot" style="background: #FFD700;"></div>
+          <div class="clean-dot" style="background: #FFD700;"></div>
+        </div>
+      </div>
+    `;
+
     try {
-      const res = await window.pulso.applyPowerPlan();
+      const animPromise = new Promise(resolve => setTimeout(resolve, 3000));
+      const applyPromise = window.pulso.applyPowerPlan();
+      
+      const [_, res] = await Promise.all([animPromise, applyPromise]);
       
       if (res.status === 'OK') {
-        footer.style.justifyContent = 'space-between';
-        footer.innerHTML = `
-          <div style="color: var(--accent-green); font-weight: 500; display: flex; align-items: center;">
-            <strong style="margin-right: 6px; font-size: 1.1rem;">✓</strong> ${t('plan_success')}
+        content.innerHTML = `
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 40px 20px; text-align: center;">
+            <div class="clean-success-check" style="background: rgba(255, 215, 0, 0.15); box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);">
+              <svg viewBox="0 0 24 24" style="width: 36px; height: 36px; fill: none; stroke: #FFD700; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round;">
+                <polyline class="clean-check-path" points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div style="font-size: 1.4rem; font-weight: 700; margin-top: 24px; margin-bottom: 8px; color: #FFD700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);">Plano Ativado!</div>
+            <div style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5;">
+              O sistema foi otimizado para máxima performance.
+            </div>
           </div>
-          <button class="btn-modal" onclick="closeModal()">Fechar</button>
         `;
         
-        try {
-          const newPlan = await window.pulso.getCurrentPlan();
-          document.getElementById('current-plan-modal').textContent = newPlan;
-        } catch (e) {}
+        setTimeout(() => {
+          content.style.height = 'auto'; // Restaurar altura
+          closeModal();
+          // Atualiza o texto do dashboard se existir
+          window.pulso.getCurrentPlan().then(p => {
+             const dashboardEl = document.getElementById('current-plan');
+             if(dashboardEl) dashboardEl.textContent = p;
+          }).catch(()=>{});
+        }, 2000);
+
       } else {
-        msgContainer.style.display = 'flex';
-        if (res.status === 'AVISO') {
-          msg.innerHTML = '<strong style="font-size: 1.1rem; margin-right: 4px;">⚠</strong> ' + res.message;
-          msgContainer.style.background = 'rgba(250, 204, 21, 0.1)';
-          msgContainer.style.border = '1px solid rgba(250, 204, 21, 0.2)';
-          msgContainer.style.color = '#facc15';
-        } else {
-          msg.innerHTML = '<strong style="font-size: 1.1rem; margin-right: 4px;">✗</strong> ' + res.message;
-          msgContainer.style.background = 'rgba(248, 113, 113, 0.1)';
-          msgContainer.style.border = '1px solid rgba(248, 113, 113, 0.2)';
-          msgContainer.style.color = '#f87171';
-        }
-        btn.disabled = false;
-        if(btnCancel) btnCancel.disabled = false;
-        btn.textContent = t('btn_apply_plan');
+         content.innerHTML = `
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 40px 20px; text-align: center;">
+            <div style="font-size: 2rem; color: #f87171; margin-bottom: 16px;">✗</div>
+            <div style="font-size: 1.1rem; color: #f87171; font-weight: 600;">Falha ao aplicar</div>
+            <div style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 8px;">${res.message}</div>
+            <button class="btn-primary" onclick="closeModal()" style="margin-top: 24px; width: auto; padding: 10px 40px;">Fechar</button>
+          </div>
+         `;
       }
     } catch (e) {
-      msgContainer.style.display = 'flex';
-      msg.innerHTML = '<strong style="font-size: 1.1rem; margin-right: 4px;">✗</strong> ' + t('plan_error');
-      msgContainer.style.background = 'rgba(248, 113, 113, 0.1)';
-      msgContainer.style.border = '1px solid rgba(248, 113, 113, 0.2)';
-      msgContainer.style.color = '#f87171';
-      btn.disabled = false;
-      if(btnCancel) btnCancel.disabled = false;
-      btn.textContent = t('btn_apply_plan');
+      content.innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 40px 20px; text-align: center;">
+          <div style="font-size: 2rem; color: #f87171; margin-bottom: 16px;">✗</div>
+          <div style="font-size: 1.1rem; color: #f87171; font-weight: 600;">Erro Inesperado</div>
+          <button class="btn-primary" onclick="closeModal()" style="margin-top: 24px; width: auto; padding: 10px 40px;">Fechar</button>
+        </div>
+       `;
     }
   });
 }

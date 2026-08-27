@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.5] - 2026-08-27
+
+### ✨ Melhorias e Otimizações Visuais
+- **Nova Animação de Energia**: O painel de Plano de Energia recebeu uma animação imersiva exclusiva! Ao aplicar o Plano Takeda, o aplicativo exibirá uma animação com um raio de energia dourado pulsante e a mensagem "Injetando Takeda Power", dando um feedback claro de que o sistema está sendo otimizado.
+- **Fechamento Automático Inteligente**: Após a ativação do plano, o painel de energia agora se fecha automaticamente de forma suave, otimizando seu tempo.
+- **Tamanho Fixo do Modal**: A tela de confirmação agora "trava" suas dimensões durante as animações, garantindo que a janela permaneça perfeitamente centralizada e não pisque na tela.
+
 ## [1.0.4] - 2026-08-27
 
 ### ✨ O que há de novo no Instalador
