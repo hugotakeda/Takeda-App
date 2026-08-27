@@ -1,6 +1,6 @@
 {
   "name": "takeda-app",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Takeda App - Análise, Limpeza e Otimização do Sistema",
   "main": "electron/main.js",
   "scripts": {
@@ -42,9 +42,12 @@
       "repo": "Takeda-App"
     },
     "nsis": {
-      "oneClick": true,
+      "oneClick": false,
       "perMachine": false,
-      "allowToChangeInstallationDirectory": false
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "Takeda App"
     }
   },
   "dependencies": {
