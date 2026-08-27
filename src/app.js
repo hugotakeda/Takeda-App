@@ -35,7 +35,6 @@ function renderAppLayout(user, sysUsername) {
     <aside class="sidebar">
       <div class="sidebar-user">
         <img class="sidebar-avatar" src="${user?.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}" alt="Avatar">
-        <span class="sidebar-username">@${sysUsername || user?.username || 'Usuário'}</span>
       </div>
       <nav class="sidebar-nav">
         <button class="sidebar-nav-item active" data-page="dashboard">
@@ -514,6 +513,8 @@ function formatBytes(bytes) {
 async function openPowerPlanModal() {
   const overlay = document.getElementById('modal-overlay');
   const content = document.getElementById('modal-content');
+  content.style.width = '520px';
+  content.style.height = 'auto';
   overlay.classList.add('active');
 
   content.innerHTML = `
@@ -589,17 +590,18 @@ async function openPowerPlanModal() {
       const res = await window.pulso.applyPowerPlan();
       
       if (res.status === 'OK') {
-        footer.style.justifyContent = 'center';
-        footer.innerHTML = `<button class="btn-modal" style="width: 100%; background: var(--accent-green-dim); color: var(--accent-green); border: 1px solid rgba(74, 222, 128, 0.2); cursor: default;"><strong style="margin-right: 6px; font-size: 1.1rem;">✓</strong> ${t('plan_success')}</button>`;
+        footer.style.justifyContent = 'space-between';
+        footer.innerHTML = `
+          <div style="color: var(--accent-green); font-weight: 500; display: flex; align-items: center;">
+            <strong style="margin-right: 6px; font-size: 1.1rem;">✓</strong> ${t('plan_success')}
+          </div>
+          <button class="btn-modal" onclick="closeModal()">Fechar</button>
+        `;
         
         try {
           const newPlan = await window.pulso.getCurrentPlan();
           document.getElementById('current-plan-modal').textContent = newPlan;
         } catch (e) {}
-
-        setTimeout(() => {
-          closeModal();
-        }, 3000);
       } else {
         msgContainer.style.display = 'flex';
         if (res.status === 'AVISO') {
@@ -633,6 +635,8 @@ async function openPowerPlanModal() {
 async function openModal() {
   const overlay = document.getElementById('modal-overlay');
   const content = document.getElementById('modal-content');
+  content.style.width = '600px';
+  content.style.height = '540px';
   overlay.classList.add('active');
 
   content.innerHTML = `
@@ -891,7 +895,11 @@ async function renderCleanTab(body, footer) {
     footer.innerHTML = '';
 
     try {
-      const res = await window.pulso.executeCleanup(items);
+      const animPromise = new Promise(r => setTimeout(r, 3500));
+      const [res] = await Promise.all([
+        window.pulso.executeCleanup(items),
+        animPromise
+      ]);
       
       // Show success with animated checkmark
       body.innerHTML = `
@@ -938,13 +946,19 @@ function showSplashOverlay(username, callback) {
   `;
   document.body.appendChild(overlay);
   
+  // Carrega o dashboard por trás da splash screen para evitar que o usuário veja a tela carregando
+  callback();
+  
   setTimeout(() => {
-    overlay.style.animation = 'fadeOut 0.3s ease-in';
+    if (window.pulso && window.pulso.resize) window.pulso.resize(970, 545);
+    
+    // Pequeno delay para garantir que a janela redimensione antes de sumir a splash
     setTimeout(() => {
-      overlay.remove();
-      if (window.pulso && window.pulso.resize) window.pulso.resize(970, 545);
-      callback();
-    }, 280);
+      overlay.style.animation = 'fadeOut 0.3s ease-in forwards';
+      setTimeout(() => {
+        overlay.remove();
+      }, 280);
+    }, 50);
   }, 2000);
 }
 
