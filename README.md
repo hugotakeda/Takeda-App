@@ -74,9 +74,7 @@ Armazenamento local persistente que salva dados de relatórios e limpezas anteri
 
 ## 📸 Demonstração
 
-<div align="center">
-  <video src="assets/demonstrativo.mp4" width="700" controls></video>
-</div>
+https://github.com/hugotakeda/Takeda-App/raw/main/assets/demonstrativo.mp4
 
 ---
 
