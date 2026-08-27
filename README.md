@@ -152,7 +152,3 @@ npm run release
 | **electron-builder** | Geração e assinatura do instalador automático (NSIS) |
 
 ---
-
-<div align="center">
-Feito com ❤️ pela HonestTech e Hugo Takeda.
-</div>
