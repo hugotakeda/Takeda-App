@@ -30,10 +30,6 @@ contextBridge.exposeInMainWorld('pulso', {
   applyPowerPlan: () => ipcRenderer.invoke('powerplan:apply'),
   getCurrentPlan: () => ipcRenderer.invoke('powerplan:current'),
 
-  // Tweaks
-  applyTweak: (id, enable) => ipcRenderer.invoke('tweaks:apply', id, enable),
-  getTweaksStatus: () => ipcRenderer.invoke('tweaks:status'),
-
   // Apps
   installApps: (appIds) => ipcRenderer.invoke('apps:install', appIds),
   onAppsProgress: (callback) => {
@@ -59,5 +55,23 @@ contextBridge.exposeInMainWorld('pulso', {
     saveSession: (token) => ipcRenderer.invoke('auth:save-session', token),
     loadSession: () => ipcRenderer.invoke('auth:load-session'),
     clearSession: () => ipcRenderer.invoke('auth:clear-session'),
-  }
+  },
+
+  // Updater
+  checkForUpdate: () => ipcRenderer.invoke('updater:check'),
+  downloadUpdate: () => ipcRenderer.invoke('updater:download'),
+  installUpdate: () => ipcRenderer.invoke('updater:install'),
+  getAppVersion: () => ipcRenderer.invoke('updater:version'),
+  onUpdateAvailable: (cb) => {
+    ipcRenderer.on('updater:update-available', (_, info) => cb(info));
+  },
+  onDownloadProgress: (cb) => {
+    ipcRenderer.on('updater:download-progress', (_, p) => cb(p));
+  },
+  onUpdateDownloaded: (cb) => {
+    ipcRenderer.on('updater:update-downloaded', (_, info) => cb(info));
+  },
+  onUpdateError: (cb) => {
+    ipcRenderer.on('updater:error', (_, err) => cb(err));
+  },
 });

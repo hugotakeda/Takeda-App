@@ -5,9 +5,6 @@ export function renderHistory() {
     <div class="page-section active" id="sec-history" style="display: flex; flex-direction: column; height: 100%;">
       <div class="dashboard-header" style="display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; margin-bottom: 24px;">
         <div style="display: flex; align-items: center; gap: 16px;">
-          <button id="btn-back-dash" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 14px; padding: 4px; display: flex; align-items: center; gap: 4px;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          </button>
           <h1 class="page-title" style="margin: 0;">${t('history_title')}</h1>
         </div>
         <button id="btn-clear-history" class="btn-secondary" style="display: none; width: fit-content; padding: 6px 16px; font-size: 0.85rem; border-color: rgba(248, 113, 113, 0.3); color: #f87171; align-items: center; gap: 8px; background: rgba(248, 113, 113, 0.05); border-radius: 8px; transition: all 0.2s;">

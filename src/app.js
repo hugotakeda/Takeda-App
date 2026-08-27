@@ -11,25 +11,130 @@ document.getElementById('btn-close').addEventListener('click', () => window.puls
 
 const container = document.getElementById('page-container');
 let lastDiagnostic = null;
+let contentContainer = null; // Will be set after sidebar renders
+let currentPage = 'dashboard';
 
 let currentUser = null;
 let currentSysUsername = null;
+
+// Sidebar SVG Icons
+const SIDEBAR_ICONS = {
+  dashboard: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>',
+  history: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+  powerplan: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>',
+  apps: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+  logout: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>',
+};
+
+function renderAppLayout(user, sysUsername) {
+  currentUser = user;
+  currentSysUsername = sysUsername;
+
+  container.className = 'app-layout';
+  container.innerHTML = `
+    <aside class="sidebar">
+      <div class="sidebar-user">
+        <img class="sidebar-avatar" src="${user?.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}" alt="Avatar">
+        <span class="sidebar-username">@${sysUsername || user?.username || 'Usuário'}</span>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="sidebar-nav-item active" data-page="dashboard">
+          ${SIDEBAR_ICONS.dashboard}
+          <span>Dashboard</span>
+        </button>
+        <button class="sidebar-nav-item" data-page="history">
+          ${SIDEBAR_ICONS.history}
+          <span>Histórico</span>
+        </button>
+        <button class="sidebar-nav-item" data-page="powerplan">
+          ${SIDEBAR_ICONS.powerplan}
+          <span>Plano de Energia</span>
+        </button>
+        <button class="sidebar-nav-item" data-page="apps">
+          ${SIDEBAR_ICONS.apps}
+          <span>Instaladores</span>
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="sidebar-nav-item" id="btn-sidebar-logout">
+          ${SIDEBAR_ICONS.logout}
+          <span>Sair</span>
+        </button>
+      </div>
+    </aside>
+    <div class="content" id="content-area"></div>
+  `;
+
+  contentContainer = document.getElementById('content-area');
+
+  // Bind sidebar navigation
+  document.querySelectorAll('.sidebar-nav-item[data-page]').forEach(btn => {
+    btn.addEventListener('click', () => navigateTo(btn.dataset.page));
+  });
+
+  // Bind logout
+  document.getElementById('btn-sidebar-logout').addEventListener('click', async () => {
+    await logout();
+    window.location.reload();
+  });
+}
+
+function navigateTo(page) {
+  if (page === currentPage && page !== 'powerplan') return;
+
+  // Stop monitor when leaving dashboard
+  if (currentPage === 'dashboard') {
+    window.pulso.stopMonitor();
+    window.pulso.removeMonitorListener();
+  }
+
+  // Update sidebar active state
+  document.querySelectorAll('.sidebar-nav-item[data-page]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.page === page);
+  });
+
+  // Power plan opens as modal
+  if (page === 'powerplan') {
+    document.querySelectorAll('.sidebar-nav-item[data-page]').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.page === 'powerplan');
+    });
+    openPowerPlanModal();
+    return;
+  }
+
+  currentPage = page;
+
+  switch (page) {
+    case 'dashboard':
+      renderDashboard();
+      initDashboard();
+      break;
+    case 'history':
+      contentContainer.innerHTML = renderHistory();
+      initHistory();
+      break;
+    case 'apps':
+      contentContainer.innerHTML = renderApps();
+      initApps();
+      break;
+  }
+}
 
 function renderDashboard(user = currentUser, sysUsername = currentSysUsername) {
   currentUser = user;
   currentSysUsername = sysUsername;
 
-  container.innerHTML = `
+  const target = contentContainer || container;
+
+  target.innerHTML = `
     <div class="dashboard-header">
       <div style="display:flex; align-items:center; gap: 12px;">
-        <img src="${currentUser?.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}" alt="Avatar" style="width: 32px; height: 32px; border-radius: 50%;">
         <h1 class="page-title">Bem-vindo, <span style="color:var(--accent-blue)">@${currentSysUsername || currentUser?.username || 'Usuário'}</span>!</h1>
       </div>
       <div style="display:flex; gap:12px; align-items:center;">
         <div class="live-indicator">
           <div class="dot" id="header-live-dot"></div> <span id="header-live-text">${t('loading')}</span>
         </div>
-        <button id="btn-logout" class="btn-secondary" style="margin: 0; padding: 4px 12px;">Sair</button>
       </div>
     </div>
 
@@ -53,9 +158,6 @@ function renderDashboard(user = currentUser, sysUsername = currentSysUsername) {
         <div class="health-desc" id="health-desc">${t('loading')}</div>
 
         <button class="btn-primary" id="btn-run-diag">${t('btn_analyze')}</button>
-        <button class="btn-secondary" id="btn-history" style="margin-bottom: 8px;">${t('history_title')}</button>
-        <button class="btn-secondary" id="btn-powerplan" style="margin-bottom: 8px;">${t('power_title')}</button>
-        <button class="btn-secondary" id="btn-apps" style="margin-bottom: 8px;">Instalador de Apps</button>
       </div>
 
       <!-- Right Column: Metrics -->
@@ -109,14 +211,14 @@ function renderDashboard(user = currentUser, sysUsername = currentSysUsername) {
 
         <!-- System Bar -->
         <div class="card system-bar">
-          <span class="label">${t('system_info')}</span>
+          <span class="label">Sistema</span>
           <span><strong id="sys-os">--</strong></span>
           <span>·</span>
-          <span><strong id="sys-cpu">--</strong></span>
+          <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><strong id="sys-cpu">--</strong></span>
           <span>·</span>
-          <span><strong id="sys-gpu">--</strong></span>
+          <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><strong id="sys-gpu">--</strong></span>
           <span>·</span>
-          <span><strong id="sys-ram">--</strong></span>
+          <span style="flex-shrink: 0;"><strong id="sys-ram">--</strong></span>
         </div>
       </div>
     </div>
@@ -160,35 +262,8 @@ function initDashboard() {
 
   document.getElementById('btn-run-diag').addEventListener('click', openModal);
 
-  document.getElementById('btn-history').addEventListener('click', () => {
-    window.pulso.stopMonitor();
-    window.pulso.removeMonitorListener();
-    container.innerHTML = renderHistory();
-    initHistory();
-    
-    document.getElementById('btn-back-dash').addEventListener('click', () => {
-      renderDashboard();
-      initDashboard();
-    });
-  });
-
-  document.getElementById('btn-apps').addEventListener('click', () => {
-    window.pulso.stopMonitor();
-    window.pulso.removeMonitorListener();
-    container.innerHTML = renderApps();
-    initApps();
-    
-    document.getElementById('btn-back-dash').addEventListener('click', () => {
-      renderDashboard();
-      initDashboard();
-    });
-  });
-
-  document.getElementById('btn-powerplan').addEventListener('click', openPowerPlanModal);
-  document.getElementById('btn-logout').addEventListener('click', async () => {
-    await logout();
-    window.location.reload();
-  });
+  // ── OTA Update Listeners ──
+  initUpdateListeners();
 }
 
 function updateHealthCard(d) {
@@ -254,6 +329,125 @@ function updateMonitorData(d) {
 
   drawSparkline('line-cpu', 'area-cpu', d.cpuHistory);
   drawSparkline('line-ram', 'area-ram', d.ramHistory);
+}
+
+/* ====================================================
+   OTA UPDATE BANNER LOGIC
+==================================================== */
+
+const UPDATE_ICONS = {
+  available: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
+  downloading: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><polyline points="19 15 12 22 5 15"/></svg>`,
+  ready: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+};
+
+function removeUpdateBanner() {
+  const existing = document.getElementById('update-banner');
+  if (existing) {
+    existing.classList.add('update-banner-dismiss');
+    setTimeout(() => existing.remove(), 300);
+  }
+}
+
+function showUpdateBanner(state, info = {}) {
+  removeUpdateBanner();
+
+  // Small delay so dismiss animation finishes if there was a previous banner
+  setTimeout(() => {
+    const banner = document.createElement('div');
+    banner.id = 'update-banner';
+    banner.className = 'update-banner';
+
+    if (state === 'available') {
+      banner.innerHTML = `
+        <div class="update-banner-header">
+          <div class="update-banner-icon available">${UPDATE_ICONS.available}</div>
+          <div class="update-banner-text">
+            <div class="update-banner-title">Nova versão disponível</div>
+            <div class="update-banner-desc">v${info.version || '?'} está pronta para download</div>
+          </div>
+          <button class="update-banner-close" id="btn-update-dismiss">✕</button>
+        </div>
+        <div class="update-banner-actions">
+          <button class="btn-update-secondary" id="btn-update-later">Depois</button>
+          <button class="btn-update-primary" id="btn-update-download">Baixar agora</button>
+        </div>
+      `;
+    } else if (state === 'downloading') {
+      banner.innerHTML = `
+        <div class="update-banner-header">
+          <div class="update-banner-icon downloading">${UPDATE_ICONS.downloading}</div>
+          <div class="update-banner-text">
+            <div class="update-banner-title">Baixando atualização...</div>
+            <div class="update-banner-desc" id="update-progress-text">${info.percent || 0}%</div>
+          </div>
+        </div>
+        <div class="update-banner-progress">
+          <div class="update-banner-progress-fill" id="update-progress-bar" style="width: ${info.percent || 0}%"></div>
+        </div>
+      `;
+    } else if (state === 'ready') {
+      banner.innerHTML = `
+        <div class="update-banner-header">
+          <div class="update-banner-icon ready">${UPDATE_ICONS.ready}</div>
+          <div class="update-banner-text">
+            <div class="update-banner-title">Atualização pronta!</div>
+            <div class="update-banner-desc">Reinicie para aplicar v${info.version || '?'}</div>
+          </div>
+          <button class="update-banner-close" id="btn-update-dismiss">✕</button>
+        </div>
+        <div class="update-banner-actions">
+          <button class="btn-update-secondary" id="btn-update-later">Depois</button>
+          <button class="btn-update-primary green" id="btn-update-install">Reiniciar agora</button>
+        </div>
+      `;
+    }
+
+    document.body.appendChild(banner);
+
+    // Bind actions
+    const dismissBtn = document.getElementById('btn-update-dismiss');
+    if (dismissBtn) dismissBtn.addEventListener('click', removeUpdateBanner);
+
+    const laterBtn = document.getElementById('btn-update-later');
+    if (laterBtn) laterBtn.addEventListener('click', removeUpdateBanner);
+
+    const downloadBtn = document.getElementById('btn-update-download');
+    if (downloadBtn) {
+      downloadBtn.addEventListener('click', () => {
+        showUpdateBanner('downloading', { percent: 0 });
+        window.pulso.downloadUpdate();
+      });
+    }
+
+    const installBtn = document.getElementById('btn-update-install');
+    if (installBtn) {
+      installBtn.addEventListener('click', () => {
+        window.pulso.installUpdate();
+      });
+    }
+  }, 350);
+}
+
+function initUpdateListeners() {
+  window.pulso.onUpdateAvailable((info) => {
+    showUpdateBanner('available', info);
+  });
+
+  window.pulso.onDownloadProgress((progress) => {
+    const bar = document.getElementById('update-progress-bar');
+    const text = document.getElementById('update-progress-text');
+    if (bar) bar.style.width = `${progress.percent}%`;
+    if (text) text.textContent = `${progress.percent}%`;
+  });
+
+  window.pulso.onUpdateDownloaded((info) => {
+    showUpdateBanner('ready', info);
+  });
+
+  window.pulso.onUpdateError((err) => {
+    console.error('[Updater]', err.message);
+  });
 }
 
 /* ====================================================
@@ -521,6 +715,11 @@ async function openModal() {
 // Export to window so inline onclick works
 window.closeModal = function() {
   document.getElementById('modal-overlay').classList.remove('active');
+  
+  // Restore sidebar active state to current page
+  document.querySelectorAll('.sidebar-nav-item[data-page]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.page === currentPage);
+  });
 };
 
 function switchTab(tab, d) {
@@ -664,34 +863,64 @@ async function renderCleanTab(body, footer) {
     const btn = document.getElementById('btn-exec-clean');
     btn.textContent = 'Limpando...';
     btn.disabled = true;
+    document.getElementById('clean-footer-text').style.display = 'none';
+
+    // Show cleaning animation
+    body.innerHTML = `
+      <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; gap: 20px;">
+        <div class="clean-anim-container">
+          <svg class="clean-anim-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18"/>
+            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+            <line x1="10" y1="11" x2="10" y2="17"/>
+            <line x1="14" y1="11" x2="14" y2="17"/>
+          </svg>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary); margin-bottom: 6px;" class="clean-anim-text">Limpando arquivos...</div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary);">${items.length} ${items.length === 1 ? 'categoria selecionada' : 'categorias selecionadas'}</div>
+        </div>
+        <div class="clean-anim-dots">
+          <span class="clean-dot"></span>
+          <span class="clean-dot"></span>
+          <span class="clean-dot"></span>
+        </div>
+      </div>
+    `;
+    footer.innerHTML = '';
 
     try {
       const res = await window.pulso.executeCleanup(items);
-      btn.style.display = 'none';
-      document.getElementById('clean-footer-text').style.display = 'none';
       
+      // Show success with animated checkmark
       body.innerHTML = `
-        <div style="text-align:center; padding: 10px 20px; display: flex; flex-direction: column; justify-content: center; height: 100%;">
-          <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 12px;">
-            <div style="color: var(--accent-green); font-size: 2rem;">✓</div>
-            <h2 style="color: var(--text-primary); font-size: 1.25rem; margin: 0;">Limpeza concluída!</h2>
+        <div style="text-align:center; padding: 10px 20px; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%;">
+          <div class="clean-success-check">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline class="clean-check-path" points="20 6 9 17 4 12"/>
+            </svg>
           </div>
+          <h2 style="color: var(--text-primary); font-size: 1.25rem; margin: 16px 0 8px 0;">Limpeza concluída!</h2>
           <p style="color: var(--text-secondary); font-size: 1rem; margin-bottom: 16px;">Espaço liberado: <strong style="color: var(--text-primary);">${formatBytes(res.totalFreed)}</strong></p>
-          <div style="background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 6px; font-size: 0.85rem; color: var(--text-secondary); text-align: left; line-height: 1.4;">
+          <div style="background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 6px; font-size: 0.85rem; color: var(--text-secondary); text-align: left; line-height: 1.4; width: 100%;">
             <strong>Nota:</strong> Alguns arquivos em uso pelo sistema não puderam ser removidos.
           </div>
+        </div>
+      `;
+      footer.innerHTML = `<button class="btn-modal" onclick="closeModal()">Fechar</button>`;
+    } catch(e) {
+      body.innerHTML = `
+        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; gap: 12px;">
+          <div style="color: #f87171; font-size: 2.5rem;">✗</div>
+          <div style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary);">Erro ao executar limpeza</div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary);">Tente novamente em alguns instantes.</div>
         </div>
       `;
       footer.innerHTML = `<button class="btn-modal" id="btn-back-clean">Voltar</button>`;
       document.getElementById('btn-back-clean').addEventListener('click', () => {
         renderCleanTab(body, footer);
       });
-    } catch(e) {
-      btn.textContent = 'Erro ao executar limpeza';
-      setTimeout(() => {
-        btn.textContent = 'Executar limpeza';
-        btn.disabled = false;
-      }, 2000);
     }
   });
 }
@@ -738,6 +967,7 @@ function showSplashOverlay(username, callback) {
       sysUsername = await window.pulso.getUsername();
     }
     showSplashOverlay(sysUsername, () => {
+      renderAppLayout(user, sysUsername);
       renderDashboard(user, sysUsername);
       initDashboard();
     });

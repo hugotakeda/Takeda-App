@@ -1,11 +1,12 @@
 {
   "name": "takeda-app",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Takeda App - Análise, Limpeza e Otimização do Sistema",
   "main": "electron/main.js",
   "scripts": {
     "dev": "electron .",
     "build": "electron-builder --win",
+    "release": "electron-builder --win --publish always",
     "pack": "electron-builder --dir"
   },
   "author": "HonestTech",
@@ -32,8 +33,13 @@
       }
     ],
     "win": {
-      "target": "portable",
+      "target": "nsis",
       "icon": "assets/takeda-icon.ico"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "hugotakeda",
+      "repo": "Takeda-App"
     },
     "nsis": {
       "oneClick": true,
@@ -42,6 +48,7 @@
     }
   },
   "dependencies": {
+    "electron-updater": "^6.8.9",
     "node-machine-id": "^1.1.12"
   }
 }

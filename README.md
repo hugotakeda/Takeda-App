@@ -58,11 +58,6 @@ O acesso é protegido por **autenticação via Discord OAuth2**, com verificaç�
 
 Importa e aplica automaticamente o arquivo `takeda.pow`, um plano de energia otimizado para extrair a melhor performance do hardware — ideal para gaming e produtividade intensiva.
 
-### 🔧 Tweaks do Sistema
-> Ajustes avançados de sistema para otimização extra.
-
-Aplique tweaks de registro e configuração do Windows com um clique, todos reversíveis. Cada tweak mostra seu status atual (ativo/inativo) em tempo real.
-
 ### 📊 Monitoramento ao Vivo
 > Dashboard com dados em tempo real atualizados a cada 1 segundo.
 
@@ -121,8 +116,7 @@ Takeda App/
 │       ├── monitor.js         # Monitoramento em tempo real
 │       ├── cleanup.js         # Limpeza de arquivos
 │       ├── powerplan.js       # Gerenciamento de planos de energia
-│       ├── history.js         # Persistência do histórico
-│       └── tweaks.js          # Tweaks do sistema
+│       └── history.js         # Persistência do histórico
 ├── src/                       # Processo renderer (UI)
 │   ├── index.html             # HTML principal
 │   ├── index.css              # Estilos (dark mode customizado)
@@ -133,8 +127,7 @@ Takeda App/
 │   ├── i18n.js                # Internacionalização
 │   ├── pages/                 # Páginas da aplicação
 │   │   ├── Login.js           # Tela de login com Discord
-│   │   ├── History.js         # Histórico de análises
-│   │   └── Tweaks.js          # Painel de tweaks
+│   │   └── History.js         # Histórico de análises
 │   ├── components/            # Componentes reutilizáveis
 │   └── locales/               # Arquivos de tradução
 └── assets/                    # Recursos estáticos

@@ -15,6 +15,7 @@
   --btn-primary: #71859c;
   
   --titlebar-height: 32px;
+  --sidebar-width: 180px;
 }
 
 * {
@@ -87,12 +88,130 @@ body {
 .win-btn:hover { background: transparent; color: var(--text-primary); }
 .win-btn.close:hover { background: transparent; color: #f87171; }
 
+/* --- App Layout (Sidebar + Content) --- */
+.app-layout {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+/* --- Sidebar --- */
+.sidebar {
+  width: var(--sidebar-width);
+  height: 100%;
+  background: var(--bg-card);
+  border-right: 1px solid var(--border-color);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  padding: calc(var(--titlebar-height) + 16px) 0 16px 0;
+  z-index: 10;
+}
+
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 16px 20px 16px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 8px;
+}
+
+.sidebar-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.sidebar-username {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 8px;
+}
+
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+}
+
+.sidebar-nav-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.sidebar-nav-item.active {
+  background: rgba(81, 162, 255, 0.1);
+  color: var(--accent-blue);
+}
+
+.sidebar-nav-item svg {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.sidebar-nav-item.active svg {
+  opacity: 1;
+}
+
+.sidebar-footer {
+  padding: 8px 8px 0 8px;
+  border-top: 1px solid var(--border-color);
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+.sidebar-footer .sidebar-nav-item {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.sidebar-footer .sidebar-nav-item:hover {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.08);
+}
+
 /* --- Content & Layout --- */
 .content {
   flex: 1;
   width: 100%;
   height: 100%;
-  padding: 32px 20px 16px 20px; /* Space for titlebar */
+  padding: calc(var(--titlebar-height) + 16px) 20px 16px 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Content when used without sidebar (login page) */
+.content-full {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  padding: 32px 20px 16px 20px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -134,7 +253,7 @@ body {
 /* --- Main Grid --- */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: 240px 1fr;
+  grid-template-columns: 210px 1fr;
   gap: 16px;
   flex: 1;
   min-height: 0;
@@ -515,6 +634,107 @@ body {
   cursor: not-allowed;
 }
 
+/* ====================================================
+   CLEANUP ANIMATION
+==================================================== */
+.clean-anim-container {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--accent-blue-dim);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: cleanPulse 2s ease-in-out infinite;
+}
+
+@keyframes cleanPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(81, 162, 255, 0.2);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 20px 8px rgba(81, 162, 255, 0.15);
+    transform: scale(1.05);
+  }
+}
+
+.clean-anim-icon {
+  animation: cleanFloat 2.5s ease-in-out infinite;
+}
+
+@keyframes cleanFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.clean-anim-text {
+  animation: cleanTextPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes cleanTextPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.clean-anim-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.clean-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-blue);
+  animation: cleanDotBounce 1.4s ease-in-out infinite;
+}
+
+.clean-dot:nth-child(2) { animation-delay: 0.2s; }
+.clean-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes cleanDotBounce {
+  0%, 80%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  40% {
+    transform: translateY(-8px);
+    opacity: 1;
+  }
+}
+
+.clean-success-check {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--accent-green-dim);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: cleanSuccessAppear 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes cleanSuccessAppear {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.clean-check-path {
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  animation: cleanCheckDraw 0.5s ease 0.3s forwards;
+}
+
+@keyframes cleanCheckDraw {
+  to { stroke-dashoffset: 0; }
+}
 
 
 /* Spinner used in Splash & Modals */
@@ -795,4 +1015,179 @@ body {
   align-items: flex-end;
 }
 
+/* ====================================================
+   OTA UPDATE BANNER
+==================================================== */
+.update-banner {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  left: auto;
+  width: 340px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 14px 16px;
+  z-index: 9990;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.03);
+  animation: updateSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(16px);
+}
 
+@keyframes updateSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.update-banner-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.update-banner-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.update-banner-icon.available {
+  background: var(--accent-blue-dim);
+  color: var(--accent-blue);
+}
+
+.update-banner-icon.downloading {
+  background: var(--accent-purple-dim);
+  color: var(--accent-purple);
+}
+
+.update-banner-icon.ready {
+  background: var(--accent-green-dim);
+  color: var(--accent-green);
+}
+
+.update-banner-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.update-banner-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.update-banner-desc {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.update-banner-close {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.update-banner-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+.update-banner-progress {
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.update-banner-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+  border-radius: 2px;
+  transition: width 0.3s ease;
+  width: 0%;
+}
+
+.update-banner-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.update-banner-actions button {
+  flex: 1;
+  padding: 7px 12px;
+  border-radius: 6px;
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.btn-update-primary {
+  background: var(--accent-blue);
+  color: #111;
+}
+
+.btn-update-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-update-primary.green {
+  background: var(--accent-green);
+}
+
+.btn-update-secondary {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color) !important;
+}
+
+.btn-update-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.update-banner-dismiss {
+  animation: updateSlideOut 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes updateSlideOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+  }
+}

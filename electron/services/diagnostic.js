@@ -159,41 +159,132 @@ function getCpuLoad(cpus) {
 }
 
 function calculateScore(d) {
-  let score = 100;
+  let totalScore = 0;
   let warnings = 0;
   let criticals = 0;
 
-  // CPU (weight: 20)
-  if (d.cpu >= 85) { score -= 20; criticals++; }
-  else if (d.cpu >= 60) { score -= 10; warnings++; }
+  // ── CPU (weight: 25) ──
+  // Curve: lenient at low usage, steep at high usage
+  // 21% → 24.5 | 50% → 20.6 | 70% → 14.7 | 90% → 5.8
+  const cpuScore = 25 * (1 - Math.pow(d.cpu / 100, 2.5));
+  if (d.cpu >= 85) criticals++;
+  else if (d.cpu >= 60) warnings++;
+  totalScore += cpuScore;
 
-  // RAM (weight: 20)
-  if (d.ramPct >= 90) { score -= 20; criticals++; }
-  else if (d.ramPct >= 75) { score -= 10; warnings++; }
+  // ── RAM (weight: 20) ──
+  // Curve: very lenient up to ~60%, then drops faster
+  // 45% → 18.2 | 70% → 13.1 | 85% → 7.7 | 95% → 2.9
+  const ramScore = 20 * (1 - Math.pow(d.ramPct / 100, 3));
+  if (d.ramPct >= 90) criticals++;
+  else if (d.ramPct >= 75) warnings++;
+  totalScore += ramScore;
 
-  // GPU driver age (weight: 10)
-  if (d.gpuDays > 365) { score -= 10; criticals++; }
-  else if (d.gpuDays > 180) { score -= 5; warnings++; }
+  // ── Ping (weight: 20) ──
+  // Piecewise: ≤10ms = perfect, smooth drop after
+  let pingScore = 0;
+  if (d.ping === -1) {
+    pingScore = 0;
+    criticals++;
+  } else if (d.ping <= 10) {
+    pingScore = 20;
+  } else if (d.ping <= 50) {
+    // 10ms → 20 | 50ms → 15
+    pingScore = 20 - ((d.ping - 10) / 40) * 5;
+  } else if (d.ping <= 100) {
+    // 50ms → 15 | 100ms → 5
+    pingScore = 15 - ((d.ping - 50) / 50) * 10;
+    if (d.ping < 80) warnings++;
+    else criticals++;
+  } else {
+    // 100ms+ → 5 → 0
+    pingScore = Math.max(0, 5 - ((d.ping - 100) / 100) * 5);
+    criticals++;
+  }
+  if (d.ping >= 30 && d.ping < 50) warnings++;
+  totalScore += pingScore;
 
-  // Heavy apps (weight: 10)
-  if (d.heavy >= 60) { score -= 10; criticals++; }
-  else if (d.heavy >= 40) { score -= 5; warnings++; }
+  // ── GPU Driver Age (weight: 10) ──
+  // Fresh drivers = full score, degrades over time
+  let gpuScore = 10;
+  if (d.gpuDays === -1) {
+    gpuScore = 5;
+    warnings++;
+  } else if (d.gpuDays <= 90) {
+    gpuScore = 10;
+  } else if (d.gpuDays <= 365) {
+    // 90d → 10 | 365d → 3
+    gpuScore = 10 - ((d.gpuDays - 90) / 275) * 7;
+    if (d.gpuDays > 180) warnings++;
+  } else {
+    // 365d+ → 3 → 0
+    gpuScore = Math.max(0, 3 - ((d.gpuDays - 365) / 365) * 3);
+    criticals++;
+  }
+  totalScore += gpuScore;
 
-  // Defender (weight: 15)
-  if (d.defender === 'Desligado') { score -= 15; criticals++; }
-  else if (d.defender === 'N/D') { score -= 5; warnings++; }
+  // ── Heavy Background Apps (weight: 10) ──
+  // Scales smoothly based on count
+  let appsScore = 10;
+  if (d.heavy <= 15) {
+    appsScore = 10;
+  } else if (d.heavy <= 50) {
+    // 15 → 10 | 50 → 5
+    appsScore = 10 - ((d.heavy - 15) / 35) * 5;
+  } else {
+    // 50+ → 5 → 0
+    appsScore = Math.max(0, 5 - ((d.heavy - 50) / 50) * 5);
+  }
+  if (d.heavy >= 60) criticals++;
+  else if (d.heavy >= 40) warnings++;
+  totalScore += appsScore;
 
-  // Ping (weight: 15)
-  if (d.ping === -1) { score -= 15; criticals++; }
-  else if (d.ping >= 80) { score -= 15; criticals++; }
-  else if (d.ping >= 30) { score -= 7; warnings++; }
+  // ── Power Plan (weight: 5) ──
+  // Performance/custom plans = full, balanced = partial, economy = low
+  let planScore = 5;
+  const planLower = d.plan.toLowerCase();
+  if (planLower.includes('saving') || planLower.includes('economy') || planLower.includes('economia')) {
+    planScore = 1;
+    warnings++;
+  } else if (planLower.includes('balanced') || planLower.includes('equilibrado')) {
+    planScore = 3;
+  }
+  // Custom/performance/takeda → full 5
+  totalScore += planScore;
 
-  // Network (weight: 10)
-  if (d.adapterName === 'Sem conexao') { score -= 10; criticals++; }
+  // ── Defender (weight: 5) ──
+  // Reduced weight — disabling Defender is a conscious user choice
+  let defScore = 5;
+  if (d.defender === 'Desligado') {
+    defScore = 2;
+  } else if (d.defender === 'N/D') {
+    defScore = 3;
+    warnings++;
+  }
+  totalScore += defScore;
 
-  score = Math.max(0, Math.min(100, score));
+  // ── Network (weight: 5) ──
+  let netScore = 5;
+  if (d.adapterName === 'Sem conexao') {
+    netScore = 0;
+    criticals++;
+  }
+  totalScore += netScore;
 
-  return { value: score, warnings, criticals, ok: 8 - warnings - criticals };
+  const finalScore = Math.round(Math.max(0, Math.min(100, totalScore)));
+
+  console.log('[Score Breakdown]', JSON.stringify({
+    cpu: `${d.cpu}% → ${cpuScore.toFixed(1)}/25`,
+    ram: `${d.ramPct}% → ${ramScore.toFixed(1)}/20`,
+    ping: `${d.ping}ms → ${pingScore.toFixed(1)}/20`,
+    gpu: `${d.gpuDays}d → ${gpuScore.toFixed ? gpuScore.toFixed(1) : gpuScore}/10`,
+    apps: `${d.heavy} → ${appsScore.toFixed ? appsScore.toFixed(1) : appsScore}/10`,
+    plan: `${d.plan} → ${planScore}/5`,
+    defender: `${d.defender} → ${defScore}/5`,
+    net: `${d.adapterName} → ${netScore}/5`,
+    total: finalScore
+  }, null, 0));
+
+  return { value: finalScore, warnings, criticals, ok: 8 - warnings - criticals };
 }
 
 module.exports = { run };

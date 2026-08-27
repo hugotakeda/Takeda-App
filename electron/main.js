@@ -6,8 +6,8 @@ const cleanup = require('./services/cleanup');
 const powerplan = require('./services/powerplan');
 const monitor = require('./services/monitor');
 const history = require('./services/history');
-const tweaks = require('./services/tweaks');
 const apps = require('./services/apps');
+const updater = require('./services/updater');
 
 let mainWindow;
 let splashWindow;
@@ -70,6 +70,12 @@ ipcMain.on('app:ready', () => {
   if (mainWindow && !mainWindow.isVisible()) {
     mainWindow.show();
   }
+
+  // Initialize updater and auto-check after a short delay
+  if (mainWindow) {
+    updater.init(mainWindow);
+    setTimeout(() => updater.check(), 5000);
+  }
 });
 
 // ── Diagnostic ──
@@ -111,14 +117,6 @@ ipcMain.handle('powerplan:current', async () => {
   return await powerplan.getCurrent();
 });
 
-// ── Tweaks ──
-ipcMain.handle('tweaks:apply', async (event, tweakId, enable) => {
-  return await tweaks.apply(tweakId, enable);
-});
-
-ipcMain.handle('tweaks:status', async () => {
-  return await tweaks.getStatus();
-});
 
 // ── Apps ──
 ipcMain.handle('apps:install', async (event, appIds) => {
@@ -176,3 +174,20 @@ ipcMain.handle('auth:login-with-discord', async (_evt, { clientId }) => {
 ipcMain.handle('auth:save-session', (_evt, token) => saveSession(token));
 ipcMain.handle('auth:load-session', () => loadSession());
 ipcMain.handle('auth:clear-session', () => clearSession());
+
+// ── Updater ──
+ipcMain.handle('updater:check', async () => {
+  return await updater.check();
+});
+
+ipcMain.handle('updater:download', async () => {
+  return await updater.download();
+});
+
+ipcMain.handle('updater:install', () => {
+  updater.install();
+});
+
+ipcMain.handle('updater:version', () => {
+  return updater.getVersion();
+});
