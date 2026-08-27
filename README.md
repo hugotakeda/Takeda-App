@@ -72,6 +72,12 @@ Armazenamento local persistente que salva dados de relatórios e limpezas anteri
 
 ---
 
+## 📸 Demonstração
+
+https://github.com/user-attachments/assets/48310890-6df3-47a2-85dc-6cf7b4708fea
+
+---
+
 
 
 ## 🏗️ Arquitetura
