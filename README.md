@@ -1,19 +1,19 @@
 <div align="center">
   <img src="assets/takeda-icon-1024.png?v=2" alt="Takeda App Icon" width="140" />
   <h1>Takeda App</h1>
-  <p><strong>Análise, Limpeza e Otimização do Sistema — Tudo em um só lugar.</strong></p>
+  <p><strong>Análise, Limpeza, Otimização e Controle — Tudo em um só lugar.</strong></p>
 
   <p>
     <img src="https://img.shields.io/badge/plataforma-Windows-0078D4?style=flat-square&logo=windows&logoColor=white" />
     <img src="https://img.shields.io/badge/electron-v32-47848F?style=flat-square&logo=electron&logoColor=white" />
-    <img src="https://img.shields.io/badge/versão-1.0.0-4ade80?style=flat-square" />
+    <img src="https://img.shields.io/badge/versão-1.0.2-4ade80?style=flat-square" />
     <img src="https://img.shields.io/badge/licença-MIT-blue?style=flat-square" />
     <img src="https://img.shields.io/badge/auth-Discord%20OAuth2-5865F2?style=flat-square&logo=discord&logoColor=white" />
   </p>
 
   <p>
     <a href="https://github.com/hugotakeda/Takeda-App/releases/latest">
-      <img src="https://img.shields.io/badge/⬇_Download_Portable-EXE-4ade80?style=for-the-badge" alt="Download" />
+      <img src="https://img.shields.io/badge/⬇_Download_Instalador-EXE-4ade80?style=for-the-badge" alt="Download" />
     </a>
   </p>
 </div>
@@ -22,118 +22,90 @@
 
 ## 📋 Sobre
 
-O **Takeda App** é um aplicativo desktop para Windows que oferece um painel completo de monitoramento, diagnóstico, limpeza e otimização do seu sistema operacional. Desenvolvido com **Electron**, ele combina uma interface moderna e elegante (dark mode) com ferramentas poderosas de nível nativo via PowerShell e WMI.
+O **Takeda App** é um aplicativo desktop para Windows que oferece um painel completo de monitoramento, diagnóstico, limpeza e otimização do seu sistema operacional. Desenvolvido com **Electron**, ele combina uma interface moderna e elegante (dark mode com layout em sidebar) com ferramentas poderosas de nível nativo via PowerShell e WMI.
+
+O aplicativo agora conta com o sistema inteligente de **Atualizações OTA (On-The-Air)**, garantindo que o seu sistema sempre receba novas versões automaticamente em segundo plano de forma contínua e sem necessidade de downloads manuais.
 
 O acesso é protegido por **autenticação via Discord OAuth2**, com verificação de licença baseada em **HWID** (Hardware ID), garantindo segurança e controle de acesso.
 
 ---
 
-## ✨ Funcionalidades
+## ✨ Funcionalidades Principais
 
-### 🩺 Diagnóstico Completo
-> Análise detalhada de 8 pontos do sistema com score de saúde de 0–100.
+### 🩺 Saúde Dinâmica & Diagnóstico Completo
+> Análise detalhada de 8 pontos do sistema com novo algoritmo orgânico de cálculo (curva proporcional) de 0–100.
 
 - Uso de CPU e RAM em tempo real com gráficos sparkline
 - Verificação do plano de energia ativo
-- Status do driver da GPU e idade do driver
-- Contagem de apps pesadas em segundo plano
-- Status do Windows Defender (tempo real)
-- Latência de rede (ping ao Google DNS 8.8.8.8)
-- Tipo e velocidade do adaptador de rede
+- Status e idade do driver da GPU
+- Detecção de aplicativos pesados operando em segundo plano
+- Monitoramento do Windows Defender
+- Teste de latência de rede (ping) e velocidade do adaptador de rede
 
-### 🧹 Limpeza Inteligente
-> Remoção segura de arquivos desnecessários com prévia de tamanho por categoria.
+### 🧹 Limpeza Inteligente e Profunda
+> Remoção segura de arquivos desnecessários com pré-cálculo e seleção de categorias.
 
 | Categoria | Descrição |
 |---|---|
-| Temporários (Usuário) | `%TEMP%` — cache de instaladores e apps |
+| Temporários (Usuário) | `%TEMP%` — cache de instaladores e lixo de aplicativos |
 | Temporários (Windows) | `C:\Windows\Temp` |
 | Prefetch | Cache de inicialização do Windows |
 | Crash Dumps | Memory dumps de programas que travaram |
 | Cache de Miniaturas | `thumbcache_*.db` do Explorer |
-| Lixeira | Todo conteúdo da Lixeira do Windows |
+| Lixeira | Todo o conteúdo aguardando na lixeira |
 
-### ⚡ Plano de Energia Takeda
-> Perfil de energia personalizado para máximo desempenho em jogos e aplicações pesadas.
+### ⚡ Perfil de Energia Takeda
+> Libere a força do "Ultimate Performance" oculto do Windows.
 
-Importa e aplica automaticamente o arquivo `takeda.pow`, um plano de energia otimizado para extrair a melhor performance do hardware — ideal para gaming e produtividade intensiva.
+Aba dedicada que previne "bottlenecks" de energia importando e aplicando automaticamente o perfil customizado `takeda.pow`. Ele otimiza os "timers" de sistema e evita que o disco ou as portas USB sejam desligadas para economizar luz, entregando 100% de estabilidade para gamers exigentes.
 
-### 📊 Monitoramento ao Vivo
-> Dashboard com dados em tempo real atualizados a cada 1 segundo.
+### ⬇️ Instalador de Apps e Atualizador
+> Instalação automatizada do essencial e atualizações constantes.
 
-- **CPU** — uso percentual + gráfico sparkline com histórico de 60 amostras
-- **GPU** — uso percentual + barra de progresso animada
-- **RAM** — uso em GB + gráfico sparkline
-- **Ping** — latência em ms + indicador de estabilidade (Estável/Instável/Offline)
-- **Info do Sistema** — OS build, modelo da CPU, GPU e quantidade de RAM
+- **Central de Apps:** Lista inteligente para instalação rápida de softwares cruciais sem precisar abrir o navegador (Steam, Discord, navegadores, drivers). 
+- **Atualizações (OTA):** Mecanismo de download contínuo de atualizações do aplicativo diretamente do GitHub Releases, alertando o usuário via painel banner (com progresso) quando a atualização for baixada.
 
-### 📜 Histórico de Análises
-> Registro automático de todos os diagnósticos realizados.
+### 📊 Painel de Histórico
+> Acompanhe a evolução da sua máquina
 
-Cada análise é salva com timestamp e score, permitindo acompanhar a evolução da saúde do sistema ao longo do tempo.
-
-### 🔐 Autenticação Segura
-> Login via Discord com verificação de licença por HWID.
-
-- OAuth2 com flow seguro via loopback HTTP local
-- Validação de licença contra backend (`Lumem-Backend`)
-- Sessão persistida localmente com DPAPI (Windows Credential Manager)
-- Hardware ID único por máquina (`node-machine-id`)
+Armazenamento local persistente que salva dados de relatórios e limpezas anteriores, te dando a visibilidade clara sobre quando o sistema foi otimizado e qual era seu score antes dos ajustes.
 
 ---
 
-## 📸 Screenshots
+## 📸 Demonstração
 
 <div align="center">
-
-### Dashboard Principal
-<img src="assets/dashboard.png" alt="Dashboard" width="700" />
-
-### Plano de Energia Takeda
-<img src="assets/planodeenergia.png" alt="Plano de Energia" width="700" />
-
-### Histórico de Análises
-<img src="assets/histórico.png" alt="Histórico" width="700" />
-
+  <video src="assets/demonstrativo.mp4" width="700" controls></video>
 </div>
 
 ---
 
 ## 🏗️ Arquitetura
 
+O projeto utiliza um frontend em HTML/CSS Puro focado em **alta performance**, se conectando aos recursos de sistema através da bridge IPC do Electron.
+
 ```
 Takeda App/
 ├── electron/                 # Processo principal (Node.js)
-│   ├── main.js               # Entry point — janela, IPC handlers
-│   ├── preload.js             # Bridge segura (contextBridge)
-│   ├── auth/                  # Autenticação Discord OAuth2
-│   │   ├── hwid.js            # Hardware ID via node-machine-id
-│   │   ├── oauth-server.js    # Servidor HTTP loopback para callback
-│   │   ├── secure-store.js    # Persistência segura de sessão
-│   │   └── shared-config.js   # Configurações compartilhadas
-│   └── services/              # Serviços nativos (PowerShell/WMI)
-│       ├── diagnostic.js      # Diagnóstico completo do sistema
-│       ├── monitor.js         # Monitoramento em tempo real
-│       ├── cleanup.js         # Limpeza de arquivos
-│       ├── powerplan.js       # Gerenciamento de planos de energia
-│       └── history.js         # Persistência do histórico
-├── src/                       # Processo renderer (UI)
-│   ├── index.html             # HTML principal
-│   ├── index.css              # Estilos (dark mode customizado)
-│   ├── app.js                 # Lógica principal da UI
-│   ├── auth.js                # Fluxo de autenticação no renderer
-│   ├── api.js                 # Comunicação com o backend
-│   ├── config.js              # Configurações do app
-│   ├── i18n.js                # Internacionalização
-│   ├── pages/                 # Páginas da aplicação
-│   │   ├── Login.js           # Tela de login com Discord
-│   │   └── History.js         # Histórico de análises
-│   ├── components/            # Componentes reutilizáveis
-│   └── locales/               # Arquivos de tradução
-└── assets/                    # Recursos estáticos
-    ├── takeda.pow             # Plano de energia customizado
-    ├── takeda-icon-*.png      # Ícones em múltiplas resoluções
-    └── *.png                  # Screenshots e backgrounds
+│   ├── main.js               # Entry point — janela, IPC handlers e Auto Updater
+│   ├── preload.js            # Bridge segura (contextBridge)
+│   ├── auth/                 # Autenticação Discord OAuth2
+│   └── services/             # Serviços nativos (PowerShell/WMI)
+│       ├── apps.js           # Gerenciador de downloads de terceiros
+│       ├── cleanup.js        # Limpeza de diretórios temporários
+│       ├── diagnostic.js     # Avaliação do Score de saúde
+│       ├── history.js        # Banco de dados local via fs
+│       ├── monitor.js        # Coleta contínua em loop
+│       ├── powerplan.js      # Integração com powercfg
+│       └── updater.js        # Integração electron-updater
+├── src/                      # Processo renderer (UI)
+│   ├── index.html            # Estrutura base da aplicação e Sidebar
+│   ├── index.css             # Estilos (Dark mode, Flex grids)
+│   ├── app.js                # Roteamento e orquestração visual
+│   └── pages/                # Estruturas da injeção de navegação
+└── assets/                   # Recursos estáticos
+    ├── takeda.pow            # Perfil do Powerplan
+    └── *.png/ico             # Logos e Ícones
 ```
 
 ---
@@ -141,54 +113,46 @@ Takeda App/
 ## 💻 Rodando Localmente
 
 ### Pré-requisitos
-
-- [Node.js](https://nodejs.org/) v18+ instalado
+- [Node.js](https://nodejs.org/) v18+
 - Windows 10/11
-- Conta no Discord (para autenticação)
+- Conta ativa no Discord
 
 ### Instalação
-
 ```bash
-# 1. Clone o repositório
+# Clone e entre no projeto
 git clone https://github.com/hugotakeda/Takeda-App.git
 cd Takeda-App
 
-# 2. Instale as dependências
+# Instale os pacotes Node
 npm install
 
-# 3. Inicie em modo de desenvolvimento
+# Inicie no modo desenvolvedor
 npm run dev
 ```
 
-### Build
-
+### Build & Release
 ```bash
-# Gerar o executável portátil (.exe)
+# Para gerar instalador de distribuição
 npm run build
 
-# Gerar apenas o diretório descompactado (para debug)
-npm run pack
+# Para gerar o release oficial OTA via Github (necessita GH_TOKEN)
+npm run release
 ```
 
-O arquivo final será gerado na pasta `dist/`.
-
 ---
 
-## 🛠️ Tecnologias
+## 🛠️ Tecnologias Principais
 
-| Tecnologia | Uso |
+| Tecnologia | Função no App |
 |---|---|
-| **[Electron](https://www.electronjs.org/)** | Framework desktop — processo main + renderer |
-| **JavaScript / Node.js** | Lógica nativa, IPC, serviços de sistema |
-| **HTML5 / CSS3** | Interface dark mode responsiva e customizada |
-| **PowerShell / WMI** | Coleta de métricas e execução de comandos nativos |
-| **Discord OAuth2** | Autenticação segura via navegador |
-| **node-machine-id** | Identificação única de hardware (HWID) |
-| **electron-builder** | Empacotamento e distribuição (portable .exe) |
+| **[Electron](https://www.electronjs.org/)** | Motor do aplicativo desktop (Main + Renderer) |
+| **Vanilla JS & CSS3** | Construção da Interface sem bloat de frameworks (extrema leveza) |
+| **PowerShell Core / WMI** | Motores utilizados pelo Main Process para extrair dados físicos do hardware |
+| **electron-updater** | Orquestração da comunicação OTA com as releases do Github |
+| **electron-builder** | Geração e assinatura do instalador automático (NSIS) |
 
 ---
 
-## 📄 Licença
-
-Este projeto está licenciado sob a [MIT License](LICENSE).
-
+<div align="center">
+Feito com ❤️ pela HonestTech e Hugo Takeda.
+</div>
