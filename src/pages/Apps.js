@@ -81,19 +81,25 @@ const appsCategories = [
       { id: 'Microsoft.Edge', name: 'Microsoft Edge', desc: 'Navegador da Microsoft', logo: 'microsoft.com' },
       { id: 'Discord.Discord', name: 'Discord', desc: 'Comunicação por voz', logo: 'discord.com' },
       { id: 'Medal.Medal', name: 'Medal.tv', desc: 'Gravador de clipes', logo: 'medal.tv' },
-      { id: 'TeamSpeakSystems.TeamSpeakClient', name: 'TeamSpeak', desc: 'Comunicação de voz', logo: 'teamspeak.com' }
+      { id: 'TeamSpeakSystems.TeamSpeakClient', name: 'TeamSpeak', desc: 'Comunicação de voz', logo: 'teamspeak.com' },
+      { id: 'qBittorrent.qBittorrent', name: 'qBittorrent', desc: 'Cliente torrent', logo: 'qbittorrent.org' }
     ]
   },
   {
     id: "dev",
     name: "Desenvolvimento",
     apps: [
-      { id: 'OBSProject.OBSStudio', name: 'OBS Studio', desc: 'Gravação e streaming', logo: 'obsproject.com' },
-      { id: 'qBittorrent.qBittorrent', name: 'qBittorrent', desc: 'Cliente torrent', logo: 'qbittorrent.org' },
-      { id: 'Spotify.Spotify', name: 'Spotify', desc: 'Streaming de música', logo: 'spotify.com' },
-      { id: 'VideoLAN.VLC', name: 'VLC Player', desc: 'Reprodutor de mídia', logo: 'videolan.org' },
       { id: 'Microsoft.VisualStudio.2022.Community', name: 'Visual Studio', desc: 'IDE da Microsoft', logo: 'visualstudio.microsoft.com' },
       { id: 'Microsoft.VisualStudioCode', name: 'VS Code', desc: 'Editor de código', logo: 'code.visualstudio.com' }
+    ]
+  },
+  {
+    id: "midia",
+    name: "Mídia",
+    apps: [
+      { id: 'OBSProject.OBSStudio', name: 'OBS Studio', desc: 'Gravação e streaming', logo: 'obsproject.com' },
+      { id: 'Spotify.Spotify', name: 'Spotify', desc: 'Streaming de música', logo: 'spotify.com' },
+      { id: 'VideoLAN.VLC', name: 'VLC Player', desc: 'Reprodutor de mídia', logo: 'videolan.org' }
     ]
   },
   {
@@ -159,7 +165,7 @@ export function renderApps() {
       </div>
     </div>
     
-    <div class="page-content" style="max-height: calc(100vh - 190px); overflow-y: auto; padding-right: 8px;" id="apps-list-container">
+    <div class="page-content" style="max-height: calc(100vh - 190px); overflow-y: auto; padding-right: 8px; padding-bottom: 60px; margin-top: 16px;" id="apps-list-container">
       <!-- Apps will be injected here -->
     </div>
   `;
@@ -209,8 +215,8 @@ function renderAppsList(filterText = '', activeTab = 'todos') {
     `).join('');
 
     html += `
-      <div class="card app-category-card" style="margin-bottom: 24px;">
-        <div class="card-title" style="margin-bottom: 16px; font-size: 1.1rem; padding: 0 4px;">${category.name}</div>
+      <div class="card app-category-card" style="margin-bottom: 32px; padding: 24px;">
+        <div class="card-title" style="margin-bottom: 24px; font-size: 1.2rem; font-weight: 600; padding: 0 4px;">${category.name}</div>
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px;">
           ${appsHtml}
         </div>

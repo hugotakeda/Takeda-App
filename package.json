@@ -1,6 +1,6 @@
 {
   "name": "takeda-app",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Takeda App - Análise, Limpeza e Otimização do Sistema",
   "main": "electron/main.js",
   "scripts": {
