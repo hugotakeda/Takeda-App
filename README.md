@@ -6,7 +6,7 @@
   <p>
     <img src="https://img.shields.io/badge/plataforma-Windows-0078D4?style=flat-square&logo=windows&logoColor=white" />
     <img src="https://img.shields.io/badge/electron-v32-47848F?style=flat-square&logo=electron&logoColor=white" />
-    <img src="https://img.shields.io/badge/versão-1.0.2-4ade80?style=flat-square" />
+    <img src="https://img.shields.io/badge/versão-1.0.8-4ade80?style=flat-square" />
     <img src="https://img.shields.io/badge/licença-MIT-blue?style=flat-square" />
     <img src="https://img.shields.io/badge/auth-Discord%20OAuth2-5865F2?style=flat-square&logo=discord&logoColor=white" />
   </p>
@@ -54,6 +54,24 @@ O acesso é protegido por **autenticação via Discord OAuth2**, com verificaç�
 | Cache de Miniaturas | `thumbcache_*.db` do Explorer |
 | Lixeira | Todo o conteúdo aguardando na lixeira |
 
+### 🛠️ Suite de Ferramentas (inspirada no [Kudu](https://github.com/AdventDevInc/kudu))
+> Uma aba inteira dedicada a limpeza avançada, controle de sistema e privacidade — sempre com backup automático antes de qualquer alteração reversível.
+
+| Ferramenta | O que faz |
+|---|---|
+| **Limpeza Avançada** | Motor de limpeza por regras cobrindo cache de navegadores (Chrome, Edge, Brave, Firefox), apps de comunicação (Discord, Spotify, Teams, Slack), ferramentas de dev (VS Code, npm, Yarn, pip), jogos (Steam, Epic, cache de shaders NVIDIA/AMD/DirectX) e itens de sistema (Windows Update, Otimização de Entrega, Windows.old) |
+| **Registro & Inicialização** | Gerencia o que abre com o Windows (habilitar/desabilitar reversível) e remove entradas órfãs do registro — sempre com backup `.reg` automático antes de remover |
+| **Analisador de Disco** | Visualiza as maiores pastas/arquivos e a distribuição por tipo de arquivo em qualquer pasta escolhida |
+| **Central de Privacidade** | 11 ajustes reversíveis de privacidade do Windows (telemetria, ID de publicidade, histórico de atividades, busca do Bing no Menu Iniciar, localização e outros) |
+| **Exclusão Segura** | Apaga arquivos/pastas sobrescrevendo o conteúdo (1 a 7 passes) antes de excluir — não vai para a Lixeira |
+| **Segurança** | Verificação rápida/completa via Windows Defender, com status de proteção e histórico de ameaças |
+| **Debloat do Windows** | Remove apps opcionais pré-instalados (Xbox, Solitaire, Clima, Notícias, etc.) sem tocar em nada essencial do sistema |
+
+### 🔒 Segurança & Proteção Anti-Engenharia Reversa
+> O app se protege sozinho.
+
+Se o DevTools for aberto na janela principal, o aplicativo se fecha automaticamente — uma proteção básica contra engenharia reversa. Uma varredura opcional de processos de análise/depuração também está disponível no código (desativada por padrão, para evitar falsos positivos com ferramentas legítimas de usuários avançados).
+
 ### ⚡ Perfil de Energia Takeda
 > Libere a força do "Ultimate Performance" oculto do Windows.
 
@@ -87,7 +105,7 @@ O projeto utiliza um frontend em HTML/CSS Puro focado em **alta performance**, s
 ```
 Takeda App/
 ├── electron/                 # Processo principal (Node.js)
-│   ├── main.js               # Entry point — janela, IPC handlers e Auto Updater
+│   ├── main.js               # Entry point — janela, IPC handlers, Auto Updater e proteção anti-DevTools
 │   ├── preload.js            # Bridge segura (contextBridge)
 │   ├── auth/                 # Autenticação Discord OAuth2
 │   └── services/             # Serviços nativos (PowerShell/WMI)
@@ -97,12 +115,28 @@ Takeda App/
 │       ├── history.js        # Banco de dados local via fs
 │       ├── monitor.js        # Coleta contínua em loop
 │       ├── powerplan.js      # Integração com powercfg
-│       └── updater.js        # Integração electron-updater
+│       ├── updater.js        # Integração electron-updater
+│       ├── rules.js          # Motor de regras da Limpeza Avançada
+│       ├── registry.js       # Inicialização e limpeza de registro
+│       ├── diskAnalyzer.js   # Análise de maiores pastas/arquivos
+│       ├── shredder.js       # Exclusão segura (multi-pass)
+│       ├── privacy.js        # Central de Privacidade (ajustes reversíveis)
+│       ├── malware.js        # Integração com Windows Defender
+│       ├── debloat.js        # Remoção de apps opcionais do Windows
+│       └── antiTamper.js     # Proteção anti-engenharia reversa
 ├── src/                      # Processo renderer (UI)
 │   ├── index.html            # Estrutura base da aplicação e Sidebar
 │   ├── index.css             # Estilos (Dark mode, Flex grids)
 │   ├── app.js                # Roteamento e orquestração visual
 │   └── pages/                # Estruturas da injeção de navegação
+│       ├── Tools.js           # Hub da aba "Ferramentas"
+│       ├── AdvancedCleanup.js # Limpeza Avançada
+│       ├── Registry.js        # Registro & Inicialização
+│       ├── DiskAnalyzer.js    # Analisador de Disco
+│       ├── Privacy.js         # Central de Privacidade
+│       ├── Shredder.js        # Exclusão Segura
+│       ├── Malware.js         # Segurança (Windows Defender)
+│       └── Debloat.js         # Debloat do Windows
 └── assets/                   # Recursos estáticos
     ├── takeda.pow            # Perfil do Powerplan
     └── *.png/ico             # Logos e Ícones
