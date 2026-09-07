@@ -1,6 +1,7 @@
 const fs = require('fs').promises;
 const path = require('path');
 const { execFile } = require('child_process');
+const { RULE_CATEGORIES, resolveRulePaths } = require('./rules');
 
 async function getDirSize(dirPath) {
   let size = 0;
@@ -178,4 +179,83 @@ async function execute(items) {
   return { results, totalFreed };
 }
 
-module.exports = { getSizes, execute };
+// ── Limpeza avançada por regras (navegadores, apps, dev, jogos, sistema) ──
+
+function findRule(id) {
+  for (const cat of RULE_CATEGORIES) {
+    const rule = cat.rules.find((r) => r.id === id);
+    if (rule) return rule;
+  }
+  return null;
+}
+
+// Windows.old costuma ter arquivos com permissões travadas pelo instalador
+// anterior; um simples fs.unlink falha silenciosamente nesses casos, então
+// usamos takeown/icacls antes de remover, via PowerShell.
+function removeWindowsOld(dirPath) {
+  return new Promise((resolve) => {
+    const safePath = dirPath.replace(/'/g, "''");
+    const script = `
+      $ErrorActionPreference = 'SilentlyContinue'
+      $p = '${safePath}'
+      if (Test-Path -LiteralPath $p) {
+        takeown /F "$p" /R /D Y | Out-Null
+        icacls "$p" /grant *S-1-5-32-544:F /T /C | Out-Null
+        Remove-Item -LiteralPath $p -Recurse -Force -ErrorAction SilentlyContinue
+      }
+      if (Test-Path -LiteralPath $p) { Write-Output "PARCIAL" } else { Write-Output "OK" }
+    `;
+    execFile(
+      'powershell.exe',
+      ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', script],
+      { timeout: 5 * 60 * 1000 },
+      (err, stdout) => resolve((stdout || '').trim())
+    );
+  });
+}
+
+async function getRuleSizes() {
+  const allRules = RULE_CATEGORIES.flatMap((c) => c.rules);
+  const sizes = {};
+
+  await Promise.all(
+    allRules.map(async (rule) => {
+      const paths = resolveRulePaths(rule);
+      let total = 0;
+      for (const p of paths) {
+        total += await getDirSize(p);
+      }
+      sizes[rule.id] = total;
+    })
+  );
+
+  return sizes;
+}
+
+async function executeRules(ruleIds) {
+  let totalFreed = 0;
+  const results = [];
+
+  for (const id of ruleIds) {
+    const rule = findRule(id);
+    if (!rule) continue;
+
+    const paths = resolveRulePaths(rule);
+    let freed = 0;
+
+    if (rule.id === 'windows-old') {
+      // Caso especial: mede o tamanho antes, tenta remover a pasta inteira.
+      for (const p of paths) freed += await getDirSize(p);
+      for (const p of paths) await removeWindowsOld(p);
+    } else {
+      for (const p of paths) freed += await emptyDir(p);
+    }
+
+    totalFreed += freed;
+    results.push({ id, freed });
+  }
+
+  return { results, totalFreed };
+}
+
+module.exports = { getSizes, execute, getRuleSizes, executeRules };

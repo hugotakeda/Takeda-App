@@ -3,6 +3,7 @@ import { initI18n, t } from './i18n.js';
 import { renderLogin } from './pages/Login.js';
 import { resumeSession, logout } from './auth.js';
 import { renderApps, initApps } from './pages/Apps.js';
+import { renderTools, initTools } from './pages/Tools.js';
 
 // Setup Window Controls
 document.getElementById('btn-minimize').addEventListener('click', () => window.pulso.minimize());
@@ -23,6 +24,7 @@ const SIDEBAR_ICONS = {
   history: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
   powerplan: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>',
   apps: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+  tools: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
   logout: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>',
 };
 
@@ -52,6 +54,10 @@ function renderAppLayout(user, sysUsername) {
         <button class="sidebar-nav-item" data-page="apps">
           ${SIDEBAR_ICONS.apps}
           <span>Instaladores</span>
+        </button>
+        <button class="sidebar-nav-item" data-page="tools">
+          ${SIDEBAR_ICONS.tools}
+          <span>Ferramentas</span>
         </button>
       </nav>
       <div class="sidebar-footer">
@@ -105,18 +111,32 @@ function navigateTo(page) {
 
   switch (page) {
     case 'dashboard':
-      renderDashboard();
-      initDashboard();
+      swapContent(() => { renderDashboard(); initDashboard(); });
       break;
     case 'history':
-      contentContainer.innerHTML = renderHistory();
-      initHistory();
+      swapContent(() => { contentContainer.innerHTML = renderHistory(); initHistory(); });
       break;
     case 'apps':
-      contentContainer.innerHTML = renderApps();
-      initApps();
+      swapContent(() => { contentContainer.innerHTML = renderApps(); initApps(); });
+      break;
+    case 'tools':
+      swapContent(() => { contentContainer.innerHTML = renderTools(); initTools(); });
       break;
   }
+}
+
+// Smoothly swaps the page content: fades the current content out, runs
+// `renderFn` (which repaints #content-area), then fades the new content in.
+function swapContent(renderFn) {
+  if (!contentContainer) { renderFn(); return; }
+  contentContainer.classList.remove('content-transition-in');
+  contentContainer.classList.add('content-transition-out');
+  setTimeout(() => {
+    renderFn();
+    contentContainer.classList.remove('content-transition-out');
+    void contentContainer.offsetWidth; // force reflow so the entrance animation restarts
+    contentContainer.classList.add('content-transition-in');
+  }, 110);
 }
 
 function renderDashboard(user = currentUser, sysUsername = currentSysUsername) {

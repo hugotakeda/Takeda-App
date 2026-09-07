@@ -7,9 +7,11 @@ export async function initI18n() {
       locale = await window.pulso.getLocale();
     }
     
-    let lang = 'en';
-    if (locale && locale.toLowerCase() === 'pt-br') {
-      lang = 'pt';
+    // O app é majoritariamente hardcoded em pt-BR, então o padrão é português;
+    // só cai para inglês se o locale do sistema for claramente outro idioma.
+    let lang = 'pt';
+    if (locale && !locale.toLowerCase().startsWith('pt')) {
+      lang = 'en';
     }
     
     const response = await fetch(`./locales/${lang}.json`);

@@ -118,18 +118,7 @@ export function renderApps() {
     { id: 'todos', name: 'Todos' },
     ...appsCategories
   ].map(tab => `
-    <button class="app-tab-btn ${tab.id === 'todos' ? 'active' : ''}" data-tab="${tab.id}" style="
-      background: transparent;
-      border: none;
-      color: ${tab.id === 'todos' ? 'var(--accent-blue)' : 'var(--text-secondary)'};
-      border-bottom: 2px solid ${tab.id === 'todos' ? 'var(--accent-blue)' : 'transparent'};
-      padding: 6px 10px;
-      font-size: 0.8rem;
-      font-weight: 500;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.2s ease;
-    ">${tab.name}</button>
+    <button class="app-tab-btn ${tab.id === 'todos' ? 'active' : ''}" data-tab="${tab.id}">${tab.name}</button>
   `).join('');
 
   return `
@@ -160,7 +149,7 @@ export function renderApps() {
         </div>
       </div>
       
-      <div style="display: flex; gap: 2px; flex-wrap: wrap; border-bottom: 1px solid var(--border-color); padding-bottom: 0px;" id="apps-tabs-container">
+      <div class="tab-bar" id="apps-tabs-container">
         ${tabsHtml}
       </div>
     </div>
@@ -191,7 +180,7 @@ function renderAppsList(filterText = '', activeTab = 'todos') {
         display: flex; flex-direction: column; align-items: center; text-align: center;
         background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color);
         border-radius: 12px; padding: 12px; transition: background 0.2s ease, transform 0.2s ease;
-      " onmouseover="this.style.background='rgba(255,255,255,0.04)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='rgba(255,255,255,0.02)'; this.style.transform='translateY(0)';">
+      ">
         <div style="
           width: 44px; height: 44px; border-radius: 10px; 
           background: #ffffff; display: flex; align-items: center; justify-content: center;
@@ -253,17 +242,11 @@ export function initApps() {
   // Tabs logic
   tabBtns.forEach(btn => {
     btn.addEventListener('click', (e) => {
-      tabBtns.forEach(b => {
-        b.style.color = 'var(--text-secondary)';
-        b.style.borderBottomColor = 'transparent';
-        b.classList.remove('active');
-      });
-      
-      const target = e.target;
-      target.style.color = 'var(--accent-blue)';
-      target.style.borderBottomColor = 'var(--accent-blue)';
+      tabBtns.forEach(b => b.classList.remove('active'));
+
+      const target = e.currentTarget;
       target.classList.add('active');
-      
+
       currentTab = target.dataset.tab;
       updateList();
     });

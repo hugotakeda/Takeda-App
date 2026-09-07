@@ -1,5 +1,35 @@
 # Changelog
 
+## [1.0.8] - 2026-09-07
+
+### ✨ Nova aba "Ferramentas"
+- **Limpeza Avançada**: motor de limpeza por regras cobrindo navegadores (Chrome, Edge, Brave, Firefox), apps de comunicação, ferramentas de desenvolvimento, jogos e itens do sistema.
+- **Registro & Inicialização**: gerenciador de itens de inicialização e limpador de registro para entradas órfãs (com backup automátio).
+- **Analisador de Disco**: visualização das maiores pastas/arquivos e distribuição por tipo de arquivo.
+- **Central de Privacidade**: 11 ajustes reversíveis de privacidade do Windows (telemetria, etc).
+- **Exclusão Segura**: apaga arquivos/pastas sobrescrevendo o conteúdo (1 a 7 passes) antes de excluir.
+- **Segurança**: verificação rápida/completa via Windows Defender, com status e histórico.
+- **Debloat do Windows**: remoção de 23 apps opcionais pré-instalados sem tocar no essencial.
+
+### 🎨 Redesign das páginas de Ferramentas
+- **Listas com cara de card**: itens aparecem como cartões com fundo, borda e hover.
+- **Abas em formato de pílula**: novo estilo consistente (fundo destacado no item ativo) para Limpeza Avançada, Registro & Inicialização, etc.
+- **Estado vazio do Analisador de Disco**: melhoria visual e atalhos rápidos de pastas (Downloads, Documentos).
+- Títulos de seção visíveis e checkboxes ajustadas ao novo layout.
+
+### 🎬 Animações e transições
+- **Troca de página e sub-abas mais suave**: transições de fade/slide em toda a navegação (Dashboard, Histórico, Ferramentas, etc.).
+- **Listas com entrada escalonada**: itens surgem em sequência (stagger) de forma fluida.
+- **Modais e barras de progresso**: entrada animada nos modais e barras do Analisador de Disco animando de 0% até o tamanho real.
+
+### 🐛 Correções e Layout
+- Corrigido um bug de idioma onde o app não reconhecia variantes `pt-br` no Windows.
+- Corrigido botão "Remover Selecionados" em Debloat e "Executar Limpeza" que ficavam fora da área com rolagem.
+- Removido espaço preto vazio em "Exclusão Segura" e "Segurança".
+- Ajustados botões grandes demais que ocupavam a tela inteira em "Recalcular", "Atualizar Lista", etc.
+- **Exclusão Segura** agora possui scroll adequado caso a lista passe do tamanho da tela.
+- DevTools bloqueado automaticamente por padrão (proteção).
+
 ## [1.0.5] - 2026-08-27
 
 ### ✨ Melhorias e Otimizações Visuais

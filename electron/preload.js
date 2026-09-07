@@ -74,4 +74,45 @@ contextBridge.exposeInMainWorld('pulso', {
   onUpdateError: (cb) => {
     ipcRenderer.on('updater:error', (_, err) => cb(err));
   },
+
+  // Limpeza Avançada (regras)
+  getRuleSizes: () => ipcRenderer.invoke('cleanup:ruleSizes'),
+  executeRules: (ids) => ipcRenderer.invoke('cleanup:executeRules', ids),
+
+  // Registro & Inicialização
+  listStartup: () => ipcRenderer.invoke('registry:listStartup'),
+  disableStartup: (item) => ipcRenderer.invoke('registry:disableStartup', item),
+  enableStartup: (item) => ipcRenderer.invoke('registry:enableStartup', item),
+  scanOrphanedRegistry: () => ipcRenderer.invoke('registry:scanOrphaned'),
+  removeOrphanedRegistry: (entries) => ipcRenderer.invoke('registry:removeOrphaned', entries),
+
+  // Analisador de Disco
+  getDiskShortcuts: () => ipcRenderer.invoke('disk:shortcuts'),
+  scanDisk: (rootPath) => ipcRenderer.invoke('disk:scan', rootPath),
+  pickDiskFolder: () => ipcRenderer.invoke('disk:pickFolder'),
+
+  // Exclusão Segura (Shredder)
+  shredPickFile: () => ipcRenderer.invoke('shredder:pickFile'),
+  shredPickFolder: () => ipcRenderer.invoke('shredder:pickFolder'),
+  shredExecute: (targetPath, passes) => ipcRenderer.invoke('shredder:execute', targetPath, passes),
+  onShredProgress: (callback) => {
+    ipcRenderer.on('shredder:progress', (_, data) => callback(data));
+  },
+  removeShredProgressListener: () => {
+    ipcRenderer.removeAllListeners('shredder:progress');
+  },
+
+  // Central de Privacidade
+  listPrivacyToggles: () => ipcRenderer.invoke('privacy:list'),
+  getPrivacyStatus: () => ipcRenderer.invoke('privacy:status'),
+  setPrivacyToggle: (id, protect) => ipcRenderer.invoke('privacy:set', id, protect),
+
+  // Segurança (Windows Defender)
+  getMalwareStatus: () => ipcRenderer.invoke('malware:status'),
+  runMalwareScan: (type) => ipcRenderer.invoke('malware:scan', type),
+  getMalwareThreats: () => ipcRenderer.invoke('malware:threats'),
+
+  // Debloat do Windows
+  listDebloatApps: () => ipcRenderer.invoke('debloat:list'),
+  removeDebloatApps: (ids) => ipcRenderer.invoke('debloat:remove', ids),
 });

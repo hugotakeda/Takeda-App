@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, dialog } = require('electron');
 const { exec } = require('child_process');
 const path = require('path');
 const diagnostic = require('./services/diagnostic');
@@ -8,6 +8,13 @@ const monitor = require('./services/monitor');
 const history = require('./services/history');
 const apps = require('./services/apps');
 const updater = require('./services/updater');
+const antiTamper = require('./services/antiTamper');
+const registry = require('./services/registry');
+const diskAnalyzer = require('./services/diskAnalyzer');
+const shredder = require('./services/shredder');
+const privacy = require('./services/privacy');
+const malware = require('./services/malware');
+const debloat = require('./services/debloat');
 
 let mainWindow;
 let splashWindow;
@@ -40,6 +47,13 @@ function createWindow() {
   mainWindow.on('closed', () => {
     monitor.stop();
     mainWindow = null;
+  });
+
+  // Fecha o app imediatamente se detectar DevTools aberto (ou, se ativado em
+  // antiTamper.js, um processo de debug/engenharia reversa conhecido).
+  antiTamper.watch(mainWindow, (reason) => {
+    console.log('[AntiTamper] Encerrando — motivo:', reason);
+    app.exit(0);
   });
 }
 
@@ -190,4 +204,111 @@ ipcMain.handle('updater:install', () => {
 
 ipcMain.handle('updater:version', () => {
   return updater.getVersion();
+});
+
+// ── Limpeza Avançada (regras) ──
+ipcMain.handle('cleanup:ruleSizes', async () => {
+  return await cleanup.getRuleSizes();
+});
+
+ipcMain.handle('cleanup:executeRules', async (event, ids) => {
+  return await cleanup.executeRules(ids);
+});
+
+// ── Registro & Inicialização ──
+ipcMain.handle('registry:listStartup', async () => {
+  return await registry.listStartup();
+});
+
+ipcMain.handle('registry:disableStartup', async (event, item) => {
+  return await registry.disableStartupItem(item);
+});
+
+ipcMain.handle('registry:enableStartup', async (event, item) => {
+  return await registry.enableStartupItem(item);
+});
+
+ipcMain.handle('registry:scanOrphaned', async () => {
+  return await registry.scanOrphaned();
+});
+
+ipcMain.handle('registry:removeOrphaned', async (event, entries) => {
+  return await registry.removeOrphaned(entries);
+});
+
+// ── Analisador de Disco ──
+ipcMain.handle('disk:shortcuts', () => {
+  return diskAnalyzer.shortcuts();
+});
+
+ipcMain.handle('disk:scan', async (event, rootPath) => {
+  return await diskAnalyzer.scanFolder(rootPath);
+});
+
+ipcMain.handle('disk:pickFolder', async () => {
+  const res = await dialog.showOpenDialog(mainWindow, { properties: ['openDirectory'] });
+  return res.canceled ? null : res.filePaths[0];
+});
+
+// ── Exclusão Segura (Shredder) ──
+ipcMain.handle('shredder:pickFile', async () => {
+  const res = await dialog.showOpenDialog(mainWindow, { properties: ['openFile'] });
+  return res.canceled ? null : res.filePaths[0];
+});
+
+ipcMain.handle('shredder:pickFolder', async () => {
+  const res = await dialog.showOpenDialog(mainWindow, { properties: ['openDirectory'] });
+  return res.canceled ? null : res.filePaths[0];
+});
+
+ipcMain.handle('shredder:execute', async (event, targetPath, passes) => {
+  let totalFreed = 0;
+  let totalCount = 0;
+  try {
+    const result = await shredder.shredPath(targetPath, passes || 3, (p) => {
+      totalFreed += p.size;
+      totalCount += 1;
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('shredder:progress', { path: p.path, totalFreed, totalCount });
+      }
+    });
+    return { ok: true, freed: result.freed, count: result.count };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+});
+
+// ── Central de Privacidade ──
+ipcMain.handle('privacy:list', () => {
+  return privacy.list();
+});
+
+ipcMain.handle('privacy:status', async () => {
+  return await privacy.getStatus();
+});
+
+ipcMain.handle('privacy:set', async (event, id, protect) => {
+  return await privacy.setToggle(id, protect);
+});
+
+// ── Segurança (Windows Defender) ──
+ipcMain.handle('malware:status', async () => {
+  return await malware.getStatus();
+});
+
+ipcMain.handle('malware:scan', async (event, type) => {
+  return await malware.runScan(type);
+});
+
+ipcMain.handle('malware:threats', async () => {
+  return await malware.getThreats();
+});
+
+// ── Debloat do Windows ──
+ipcMain.handle('debloat:list', async () => {
+  return await debloat.listStatus();
+});
+
+ipcMain.handle('debloat:remove', async (event, ids) => {
+  return await debloat.remove(ids);
 });

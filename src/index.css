@@ -258,6 +258,26 @@ body {
   padding: 16px;
 }
 
+/* Generic heading/desc/value used inside any .card. More specific rules
+   (e.g. .metric-card .card-title) override these where needed. */
+.card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.2px;
+}
+.card-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+.card-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+
 /* --- Left Column (Health) --- */
 .health-card {
   display: flex;
@@ -572,16 +592,27 @@ body {
 .clean-item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 13px 16px;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+.clean-item:hover {
+  background: rgba(255, 255, 255, 0.045);
+  border-color: rgba(255, 255, 255, 0.14);
 }
 .clean-check {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   accent-color: var(--btn-primary);
   cursor: pointer;
+  flex-shrink: 0;
 }
 .clean-info {
   flex-grow: 1;
+  min-width: 0;
 }
 .clean-name {
   font-weight: 600;
@@ -1008,6 +1039,79 @@ body {
 }
 
 /* ====================================================
+   TAB BAR (segmented pill tabs — Ferramentas, App Store)
+==================================================== */
+.tab-bar {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 4px;
+}
+.app-tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 8px 14px;
+  border-radius: 7px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+.app-tab-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+}
+.app-tab-btn.active,
+.app-tab-btn.active:hover {
+  color: var(--accent-blue);
+  background: var(--accent-blue-dim);
+}
+
+/* ====================================================
+   EMPTY STATE (placeholder for pages with no data yet)
+==================================================== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+  padding: 60px 20px;
+  min-height: 260px;
+  color: var(--text-secondary);
+}
+.empty-state-icon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+.empty-state-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.empty-state-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  max-width: 360px;
+  line-height: 1.5;
+}
+
+/* ====================================================
    OTA UPDATE BANNER
 ==================================================== */
 .update-banner {
@@ -1235,5 +1339,97 @@ body {
 @keyframes powerTextGlow {
   0%, 100% { opacity: 0.8; text-shadow: 0 0 5px rgba(255, 215, 0, 0.4); }
   50% { opacity: 1; text-shadow: 0 0 15px rgba(255, 215, 0, 0.8); }
+}
+
+/* ====================================================
+   PAGE / SUBVIEW TRANSITIONS
+==================================================== */
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pageFadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-4px); }
+}
+.content-transition-out {
+  animation: pageFadeOut 0.11s ease-in forwards;
+}
+.content-transition-in {
+  animation: pageFadeIn 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes subviewFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.subview-transition-in {
+  animation: subviewFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ====================================================
+   LIST ITEM ENTRANCE (staggered)
+==================================================== */
+@keyframes listItemIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.clean-list .clean-item,
+.app-category-card .app-item {
+  animation: listItemIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+.clean-list .clean-item:nth-child(1),  .app-category-card .app-item:nth-child(1)  { animation-delay: 0ms; }
+.clean-list .clean-item:nth-child(2),  .app-category-card .app-item:nth-child(2)  { animation-delay: 22ms; }
+.clean-list .clean-item:nth-child(3),  .app-category-card .app-item:nth-child(3)  { animation-delay: 44ms; }
+.clean-list .clean-item:nth-child(4),  .app-category-card .app-item:nth-child(4)  { animation-delay: 66ms; }
+.clean-list .clean-item:nth-child(5),  .app-category-card .app-item:nth-child(5)  { animation-delay: 88ms; }
+.clean-list .clean-item:nth-child(6),  .app-category-card .app-item:nth-child(6)  { animation-delay: 110ms; }
+.clean-list .clean-item:nth-child(7),  .app-category-card .app-item:nth-child(7)  { animation-delay: 132ms; }
+.clean-list .clean-item:nth-child(8),  .app-category-card .app-item:nth-child(8)  { animation-delay: 154ms; }
+.clean-list .clean-item:nth-child(9),  .app-category-card .app-item:nth-child(9)  { animation-delay: 176ms; }
+.clean-list .clean-item:nth-child(10), .app-category-card .app-item:nth-child(10) { animation-delay: 198ms; }
+.clean-list .clean-item:nth-child(11), .app-category-card .app-item:nth-child(11) { animation-delay: 220ms; }
+.clean-list .clean-item:nth-child(12), .app-category-card .app-item:nth-child(12) { animation-delay: 242ms; }
+.clean-list .clean-item:nth-child(13), .app-category-card .app-item:nth-child(13) { animation-delay: 264ms; }
+.clean-list .clean-item:nth-child(14), .app-category-card .app-item:nth-child(14) { animation-delay: 286ms; }
+.clean-list .clean-item:nth-child(n+15), .app-category-card .app-item:nth-child(n+15) { animation-delay: 300ms; }
+
+/* ====================================================
+   MODAL ENTRANCE
+==================================================== */
+@keyframes modalOverlayIn {
+  from { background: rgba(0, 0, 0, 0); backdrop-filter: blur(0px); }
+  to { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(2px); }
+}
+@keyframes modalContentIn {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.modal-overlay.active {
+  animation: modalOverlayIn 0.18s ease-out;
+}
+.modal-overlay.active .modal-content {
+  animation: modalContentIn 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ====================================================
+   APP ITEM HOVER (CSS-driven, replaces inline JS handlers)
+==================================================== */
+.app-item:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Respect reduced-motion preference for the new entrance/transition animations */
+@media (prefers-reduced-motion: reduce) {
+  .content-transition-out,
+  .content-transition-in,
+  .subview-transition-in,
+  .clean-list .clean-item,
+  .app-category-card .app-item,
+  .modal-overlay.active,
+  .modal-overlay.active .modal-content {
+    animation: none !important;
+  }
 }
 
