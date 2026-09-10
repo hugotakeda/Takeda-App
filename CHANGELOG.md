@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.1.1] - 2026-09-09
+## [1.1.0] - 2026-09-09
 
 ### Correções de interface
 - Reorganizada a navegação de Ferramentas para manter as sete categorias inteiramente visíveis e com espaçamento uniforme.
@@ -9,7 +9,7 @@
 - Adicionada navegação entre abas com setas, Home e End, além de foco explícito na região rolável.
 - O QA de interface agora usa catálogos extensos para impedir que listas curtas mascarem regressões de overflow.
 
-## [1.1.0] - 2026-09-09
+## [1.0.9] - 2026-09-09
 
 ### Nova identidade visual
 - Interface redesenhada em obsidiana, marfim e lavanda para acompanhar o novo ícone Takeda.
