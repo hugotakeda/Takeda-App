@@ -69,20 +69,40 @@ export function invalidateCache(key) {
 /* process via the preload bridge, see window.lumen.system.*)             */
 /* ---------------------------------------------------------------------- */
 
-async function post(path, body) {
-  const res = await fetch(`${API_BASE_URL}${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  const json = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    const err = new Error(json.error || `Request failed (${res.status})`);
-    err.status = res.status;
-    err.code = json.code;
-    throw err;
+async function post(path, body, timeoutMs = 10000) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const res = await fetch(`${API_BASE_URL}${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const err = new Error(json.error || `Request failed (${res.status})`);
+      err.status = res.status;
+      err.code = json.code;
+      throw err;
+    }
+    return json;
+  } catch (error) {
+    if (error?.name === 'AbortError') {
+      const timeoutError = new Error('O servidor demorou demais para responder.');
+      timeoutError.code = 'TIMEOUT';
+      throw timeoutError;
+    }
+
+    if (error?.status) throw error;
+    const networkError = new Error('Não foi possível conectar ao servidor.');
+    networkError.code = 'NETWORK';
+    networkError.cause = error;
+    throw networkError;
+  } finally {
+    clearTimeout(timeout);
   }
-  return json;
 }
 
 export const backend = {

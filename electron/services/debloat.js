@@ -1,38 +1,17 @@
 const { execFile } = require('child_process');
-const path = require('path');
-const fs = require('fs');
-const os = require('os');
+const { runElevated } = require('./elevated');
 
 function runPS(script, timeout = 30000) {
   return new Promise((resolve, reject) => {
     execFile(
       'powershell.exe',
-      ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', script],
-      { timeout, maxBuffer: 1024 * 1024 * 8 },
-      (err, stdout) => {
-        if (err) reject(err);
+      ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', script],
+      { timeout, windowsHide: true, maxBuffer: 1024 * 1024 * 8 },
+      (err, stdout, stderr) => {
+        if (err) reject(Object.assign(err, { stderr: String(stderr || '').trim() }));
         else resolve((stdout || '').trim());
       }
     );
-  });
-}
-
-function runPSElevated(script, timeout = 5 * 60 * 1000) {
-  return new Promise((resolve, reject) => {
-    const tmpFile = path.join(os.tmpdir(), `takeda-debloat-${Date.now()}.ps1`);
-    fs.writeFileSync(tmpFile, script, 'utf-8');
-    const wrapper = `
-      $ErrorActionPreference = 'SilentlyContinue'
-      Start-Process powershell.exe -Verb RunAs -Wait -WindowStyle Hidden -ArgumentList @(
-        '-NoProfile','-ExecutionPolicy','Bypass','-File','${tmpFile.replace(/'/g, "''")}'
-      )
-      Write-Output "DONE"
-    `;
-    execFile('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', wrapper], { timeout }, (err, stdout) => {
-      try { fs.unlinkSync(tmpFile); } catch (e) {}
-      if (err) reject(err);
-      else resolve((stdout || '').trim());
-    });
   });
 }
 
@@ -77,13 +56,8 @@ async function listStatus() {
     }
     $result | ConvertTo-Json -Compress
   `;
-  let raw = {};
-  try {
-    const out = await runPS(script);
-    raw = out ? JSON.parse(out) : {};
-  } catch (e) {
-    raw = {};
-  }
+  const out = await runPS(script);
+  const raw = out ? JSON.parse(out) : {};
   return BLOAT_APPS.map((a) => ({ ...a, installed: !!raw[a.pattern] }));
 }
 
@@ -93,19 +67,29 @@ async function remove(ids) {
 
   const commands = targets
     .map((a) => `
-      Get-AppxPackage -AllUsers -Name '${a.pattern}' -ErrorAction SilentlyContinue | Remove-AppxPackage -ErrorAction SilentlyContinue
-      Get-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Where-Object { $_.PackageName -like '${a.pattern}*' } | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+      $packages = @(Get-AppxPackage -AllUsers -Name '${a.pattern}' -ErrorAction SilentlyContinue)
+      foreach ($package in $packages) {
+        Remove-AppxPackage -Package $package.PackageFullName -AllUsers -ErrorAction Stop
+      }
+      $provisioned = @(Get-AppxProvisionedPackage -Online -ErrorAction Stop | Where-Object { $_.DisplayName -eq '${a.pattern}' })
+      foreach ($package in $provisioned) {
+        Remove-AppxProvisionedPackage -Online -PackageName $package.PackageName -ErrorAction Stop | Out-Null
+      }
+      $remaining = @(Get-AppxPackage -AllUsers -Name '${a.pattern}' -ErrorAction SilentlyContinue)
+      $remainingProvisioned = @(Get-AppxProvisionedPackage -Online -ErrorAction Stop | Where-Object { $_.DisplayName -eq '${a.pattern}' })
+      if ($remaining.Count -gt 0 -or $remainingProvisioned.Count -gt 0) {
+        throw 'O aplicativo ${a.name.replace(/'/g, "''")} ainda está instalado.'
+      }
     `)
     .join('\n');
 
   const script = `
-    $ErrorActionPreference = 'SilentlyContinue'
+    $ErrorActionPreference = 'Stop'
     ${commands}
-    Write-Output "OK"
   `;
 
   try {
-    await runPSElevated(script);
+    await runElevated(script, 5 * 60 * 1000);
     return { ok: true, removed: targets.map((t) => t.id) };
   } catch (e) {
     return { ok: false, removed: [], error: e.message };

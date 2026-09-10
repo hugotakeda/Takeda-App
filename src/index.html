@@ -3,23 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b0a10">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://takeda-auth.vercel.app; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self'">
   <title>Takeda App</title>
+  <link rel="icon" type="image/png" href="../assets/takeda-icon-256.png">
   <link rel="stylesheet" href="index.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="titlebar">
     <div class="drag-region"></div>
     <div class="window-controls">
-      <button class="win-btn minimize" id="btn-minimize">
+      <button class="win-btn minimize" id="btn-minimize" type="button" aria-label="Minimizar janela" title="Minimizar">
         <svg width="10" height="10" viewBox="0 0 10 10"><path d="M1,4.5 h8 v1 h-8 z" fill="currentColor"/></svg>
       </button>
-      <button class="win-btn maximize" id="btn-maximize">
+      <button class="win-btn maximize" id="btn-maximize" type="button" aria-label="Maximizar janela" title="Maximizar">
         <svg width="10" height="10" viewBox="0 0 10 10"><path d="M1,1 v8 h8 v-8 z M2,2 h6 v6 h-6 z" fill="currentColor"/></svg>
       </button>
-      <button class="win-btn close" id="btn-close">
+      <button class="win-btn close" id="btn-close" type="button" aria-label="Fechar janela" title="Fechar">
         <svg width="10" height="10" viewBox="0 0 10 10"><path d="M1,1 l8,8 M9,1 l-8,8" stroke="currentColor" stroke-width="1.5"/></svg>
       </button>
     </div>
@@ -31,7 +31,7 @@
   </main>
 
   <!-- Modal Overlay -->
-  <div class="modal-overlay" id="modal-overlay">
+  <div class="modal-overlay" id="modal-overlay" aria-hidden="true">
     <div class="modal-content" id="modal-content">
       <!-- Modal content injected here -->
     </div>

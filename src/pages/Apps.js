@@ -1,4 +1,5 @@
 import { t } from '../i18n.js';
+import { escapeHtml } from '../ui.js';
 
 const appsCategories = [
   {
@@ -118,30 +119,21 @@ export function renderApps() {
     { id: 'todos', name: 'Todos' },
     ...appsCategories
   ].map(tab => `
-    <button class="app-tab-btn ${tab.id === 'todos' ? 'active' : ''}" data-tab="${tab.id}">${tab.name}</button>
+    <button class="app-tab-btn ${tab.id === 'todos' ? 'active' : ''}" type="button" role="tab" aria-selected="${tab.id === 'todos'}" data-tab="${tab.id}">${tab.name}</button>
   `).join('');
 
   return `
-    <div class="page-header" style="display: flex; flex-direction: column; gap: 16px;">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
+    <div class="page-header apps-header">
+      <div class="apps-header-row">
         <div>
           <h1 class="page-title">App Store</h1>
-          <p class="page-subtitle" style="color: var(--text-secondary); margin-top: 4px;">Instale seus programas favoritos com 1 clique.</p>
+          <p class="page-subtitle apps-subtitle">Instale seus programas favoritos com 1 clique.</p>
         </div>
-        <div style="display: flex; gap: 12px; align-items: center;">
-          <div style="position: relative;">
-            <input type="text" id="app-search-input" placeholder="Buscar aplicativo..." style="
-              background: var(--bg-card);
-              border: 1px solid var(--border-color);
-              border-radius: 8px;
-              padding: 8px 12px 8px 36px;
-              color: var(--text-primary);
-              font-family: inherit;
-              font-size: 0.9rem;
-              width: 200px;
-              transition: border-color 0.2s ease;
-            ">
-            <svg style="position: absolute; left: 10px; top: 9px; color: var(--text-secondary);" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <div class="apps-header-actions">
+          <div class="apps-search-shell">
+            <label class="sr-only" for="app-search-input">Buscar aplicativo</label>
+            <input class="apps-search-input" type="search" id="app-search-input" placeholder="Buscar aplicativo..." autocomplete="off">
+            <svg class="apps-search-icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
@@ -149,12 +141,12 @@ export function renderApps() {
         </div>
       </div>
       
-      <div class="tab-bar" id="apps-tabs-container">
+      <div class="tab-bar apps-tabs" id="apps-tabs-container" role="tablist" aria-label="Categorias de aplicativos">
         ${tabsHtml}
       </div>
     </div>
     
-    <div class="page-content" style="max-height: calc(100vh - 190px); overflow-y: auto; padding-right: 8px; padding-bottom: 60px; margin-top: 16px;" id="apps-list-container">
+    <div class="page-content apps-list custom-scrollbar" id="apps-list-container" aria-live="polite">
       <!-- Apps will be injected here -->
     </div>
   `;
@@ -176,45 +168,32 @@ function renderAppsList(filterText = '', activeTab = 'todos') {
     if (filteredApps.length === 0) return; // Skip empty categories after filter
 
     const appsHtml = filteredApps.map(app => `
-      <div class="app-item" data-name="${app.name.toLowerCase()}" style="
-        display: flex; flex-direction: column; align-items: center; text-align: center;
-        background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color);
-        border-radius: 12px; padding: 12px; transition: background 0.2s ease, transform 0.2s ease;
-      ">
-        <div style="
-          width: 44px; height: 44px; border-radius: 10px; 
-          background: #ffffff; display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 4px 10px rgba(0,0,0,0.12); overflow: hidden; padding: 6px; margin-bottom: 12px;
-        ">
-          <img src="https://www.google.com/s2/favicons?domain=${app.logo}&sz=128" onerror="this.src='https://www.google.com/s2/favicons?domain=microsoft.com&sz=128'" style="width: 100%; height: 100%; object-fit: contain;">
+      <div class="app-item apps-item" data-name="${escapeHtml(app.name.toLowerCase())}">
+        <div class="apps-item-icon" data-fallback="${escapeHtml(app.name.slice(0, 1).toUpperCase())}">
+          <img class="apps-item-logo" src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(app.logo)}&amp;sz=128" alt="" width="21" height="21" loading="lazy" decoding="async" referrerpolicy="no-referrer" fetchpriority="low">
         </div>
-        <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-start; margin-bottom: 12px;">
-          <div style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem; margin-bottom: 2px; line-height: 1.1;">${app.name}</div>
-          <div style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.2;">${app.desc}</div>
+        <div class="apps-item-copy">
+          <div class="apps-item-name">${escapeHtml(app.name)}</div>
+          <div class="apps-item-description">${escapeHtml(app.desc)}</div>
         </div>
-        <button class="btn-install-individual" data-id="${app.id}" style="
-          width: 100%; background: rgba(63, 140, 232, 0.1); color: var(--accent-blue);
-          border: 1px solid rgba(63, 140, 232, 0.2); border-radius: 8px;
-          padding: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer;
-          transition: all 0.2s ease;
-        ">
+        <button class="btn-install-individual apps-install-button" type="button" data-id="${escapeHtml(app.id)}">
           Baixar
         </button>
       </div>
     `).join('');
 
     html += `
-      <div class="card app-category-card" style="margin-bottom: 32px; padding: 24px;">
-        <div class="card-title" style="margin-bottom: 24px; font-size: 1.2rem; font-weight: 600; padding: 0 4px;">${category.name}</div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px;">
+      <section class="card app-category-card apps-category-card">
+        <h2 class="card-title apps-category-title">${escapeHtml(category.name)}</h2>
+        <div class="apps-grid">
           ${appsHtml}
         </div>
-      </div>
+      </section>
     `;
   });
 
   if (html === '') {
-    html = `<div style="text-align: center; padding: 40px; color: var(--text-secondary);">Nenhum aplicativo encontrado.</div>`;
+    html = `<div class="apps-empty-state" role="status">Nenhum aplicativo encontrado.</div>`;
   }
 
   return html;
@@ -225,27 +204,42 @@ export function initApps() {
   const searchInput = document.getElementById('app-search-input');
   const tabBtns = document.querySelectorAll('.app-tab-btn');
   
+  if (!container || !searchInput) return () => {};
+
   let currentTab = 'todos';
   let currentSearch = '';
+  let searchTimer = null;
+  let alive = true;
+  const feedbackTimers = new Set();
 
   const updateList = () => {
+    if (!alive || !container.isConnected) return;
     container.innerHTML = renderAppsList(currentSearch, currentTab);
     attachInstallListeners();
+    container.querySelectorAll('.apps-item-logo').forEach((image) => {
+      image.addEventListener('error', () => {
+        image.hidden = true;
+        image.parentElement?.classList.add('apps-item-icon--fallback');
+      }, { once: true });
+    });
   };
 
   // Search logic
   searchInput.addEventListener('input', (e) => {
     currentSearch = e.target.value.toLowerCase();
-    updateList();
+    window.clearTimeout(searchTimer);
+    searchTimer = window.setTimeout(updateList, 160);
   });
 
   // Tabs logic
   tabBtns.forEach(btn => {
     btn.addEventListener('click', (e) => {
       tabBtns.forEach(b => b.classList.remove('active'));
+      tabBtns.forEach(b => b.setAttribute('aria-selected', 'false'));
 
       const target = e.currentTarget;
       target.classList.add('active');
+      target.setAttribute('aria-selected', 'true');
 
       currentTab = target.dataset.tab;
       updateList();
@@ -264,27 +258,31 @@ export function initApps() {
         
         btn.disabled = true;
         btn.textContent = 'Instalando...';
-        btn.style.background = 'rgba(250, 204, 21, 0.1)';
-        btn.style.color = '#facc15';
-        btn.style.borderColor = 'rgba(250, 204, 21, 0.2)';
+        btn.classList.remove('is-success', 'is-error');
+        btn.classList.add('is-installing');
 
         // Listen for progress if needed, but since it's individual we can just wait for the promise
         try {
-          await window.pulso.installApps([appId]);
-          btn.textContent = 'Concluído';
-          btn.style.background = 'rgba(74, 222, 128, 0.1)';
-          btn.style.color = 'var(--accent-green)';
-          btn.style.borderColor = 'rgba(74, 222, 128, 0.2)';
+          const response = await window.pulso.installApps([appId]);
+          const result = response?.results?.[0];
+          if (!response?.ok || !result?.ok) throw new Error(result?.error || 'A instalação não foi confirmada');
+          if (!alive || !btn.isConnected) return;
+          btn.textContent = result.action === 'opened-url' ? 'Aberto' : 'Concluído';
+          btn.classList.remove('is-installing');
+          btn.classList.add('is-success');
         } catch (err) {
+          if (!alive || !btn.isConnected) return;
           btn.textContent = 'Erro';
-          btn.style.background = 'rgba(248, 113, 113, 0.1)';
-          btn.style.color = '#f87171';
-          btn.style.borderColor = 'rgba(248, 113, 113, 0.2)';
+          btn.classList.remove('is-installing');
+          btn.classList.add('is-error');
           
-          setTimeout(() => {
+          const timer = window.setTimeout(() => {
+            feedbackTimers.delete(timer);
+            if (!alive || !btn.isConnected) return;
             btn.disabled = false;
             btn.textContent = 'Tentar Novamente';
           }, 3000);
+          feedbackTimers.add(timer);
         }
       });
     });
@@ -292,4 +290,11 @@ export function initApps() {
 
   // Initial render
   updateList();
+
+  return () => {
+    alive = false;
+    window.clearTimeout(searchTimer);
+    feedbackTimers.forEach((timer) => window.clearTimeout(timer));
+    feedbackTimers.clear();
+  };
 }

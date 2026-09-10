@@ -1,10 +1,12 @@
 {
   "name": "takeda-app",
-  "version": "1.0.8",
+  "version": "1.1.1",
   "description": "Takeda App - Análise, Limpeza e Otimização do Sistema",
   "main": "electron/main.js",
   "scripts": {
     "dev": "electron .",
+    "check": "node scripts/check-project.js",
+    "test": "node --test",
     "build": "electron-builder --win",
     "release": "electron-builder --win --publish always",
     "pack": "electron-builder --dir"
@@ -12,12 +14,21 @@
   "author": "HonestTech",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^32.0.0",
-    "electron-builder": "^25.0.0"
+    "electron": "^44.3.0",
+    "electron-builder": "^26.15.3"
   },
   "build": {
     "appId": "com.honesttech.takeda",
     "productName": "Takeda App",
+    "asar": true,
+    "electronFuses": {
+      "runAsNode": false,
+      "enableCookieEncryption": true,
+      "enableNodeOptionsEnvironmentVariable": false,
+      "enableNodeCliInspectArguments": false,
+      "enableEmbeddedAsarIntegrityValidation": true,
+      "onlyLoadAppFromAsar": true
+    },
     "directories": {
       "output": "dist"
     },
@@ -53,5 +64,8 @@
   "dependencies": {
     "electron-updater": "^6.8.9",
     "node-machine-id": "^1.1.12"
+  },
+  "overrides": {
+    "js-yaml": "^4.3.2"
   }
 }

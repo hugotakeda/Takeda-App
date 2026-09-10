@@ -1,6 +1,4 @@
 const { execFile } = require('child_process');
-const path = require('path');
-
 function runPS(script) {
   return new Promise((resolve, reject) => {
     execFile('powershell.exe', [
@@ -17,7 +15,7 @@ const monitor = require('./monitor');
 
 async function run() {
   const cpus = os.cpus();
-  const cpuModel = cpus[0].model;
+  const cpuModel = cpus[0]?.model || 'N/D';
   const cpuCores = cpus.length;
   
   // Calculate CPU load over 100ms
@@ -26,7 +24,9 @@ async function run() {
   const endMeasure = getCpuLoad(os.cpus());
   const idleDiff = endMeasure.idle - startMeasure.idle;
   const totalDiff = endMeasure.total - startMeasure.total;
-  const cpuPct = Math.round(100 - (100 * idleDiff / totalDiff));
+  const cpuPct = totalDiff > 0
+    ? Math.round(Math.max(0, Math.min(100, 100 - (100 * idleDiff / totalDiff))))
+    : 0;
   
   const ramTotalGB = Math.round(os.totalmem() / 1024 / 1024 / 1024 * 10) / 10;
   const ramFreeGB = Math.round(os.freemem() / 1024 / 1024 / 1024 * 10) / 10;
@@ -81,14 +81,24 @@ async function run() {
       $adapterName = $adapter.Name
       $adapterType = "Ethernet"
       if ($adapter.PhysicalMediaType -match '802\\.11' -or $adapter.Name -match 'Wi-?Fi|Wireless|WLAN') { $adapterType = "Wi-Fi" }
-      $adapterSpeed = $adapter.LinkSpeed
-      # Extract number from "1 Gbps"
-      if ($adapterSpeed -match '^\\d+') { $adapterSpeed = [long]$matches[0] * 1000000000 }
+      $linkSpeedText = [string]$adapter.LinkSpeed
+      if ($linkSpeedText -match '^\\s*([\\d\\.,]+)\\s*([KMGT]?)bps') {
+        $speedValue = [double]($matches[1] -replace ',', '.')
+        $multiplier = switch ($matches[2].ToUpperInvariant()) {
+          'K' { 1000 }
+          'M' { 1000000 }
+          'G' { 1000000000 }
+          'T' { 1000000000000 }
+          default { 1 }
+        }
+        $adapterSpeed = [long]($speedValue * $multiplier)
+      }
     }
 
     # OS Info
     $osInfo = Get-CimInstance Win32_OperatingSystem
     $osBuild = $osInfo.BuildNumber
+    $osCaption = $osInfo.Caption
 
     @{
       plan = $plan
@@ -102,6 +112,7 @@ async function run() {
       adapterType = $adapterType
       adapterSpeed = $adapterSpeed
       osBuild = $osBuild
+      osCaption = $osCaption
     } | ConvertTo-Json -Compress
   `;
 
@@ -129,16 +140,16 @@ async function run() {
     plan: psData.plan || "Desconhecido",
     gpuName: psData.gpuName || "N/D",
     gpuVer: psData.gpuVer || "N/D",
-    gpuDays: psData.gpuDays || -1,
+    gpuDays: psData.gpuDays ?? -1,
     gpuUsage: 0,
-    heavy: psData.heavy || 0,
+    heavy: psData.heavy ?? 0,
     defender: psData.defender || "N/D",
     ping: net.ping,
     packetLoss: net.packetLoss,
     adapterName: psData.adapterName || "Sem conexao",
     adapterType: psData.adapterType || "N/D",
-    adapterSpeed: psData.adapterSpeed || 0,
-    osCaption: "Windows 11", // generic fallback if needed
+    adapterSpeed: psData.adapterSpeed ?? 0,
+    osCaption: psData.osCaption || "Windows",
     osBuild: psData.osBuild || "",
     osVersion: ""
   };

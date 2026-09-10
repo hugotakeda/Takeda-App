@@ -147,7 +147,7 @@ const RULE_CATEGORIES = [
         id: 'npm-cache',
         name: 'npm — Cache de pacotes',
         desc: 'Cache de download do npm. É baixado novamente quando necessário.',
-        paths: ['${APPDATA}\\npm-cache'],
+        paths: ['${LOCALAPPDATA}\\npm-cache'],
       },
       {
         id: 'yarn-cache',

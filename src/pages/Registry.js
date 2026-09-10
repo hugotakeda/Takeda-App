@@ -1,49 +1,67 @@
+import { escapeHtml } from '../ui.js';
+
+let startupCache = [];
+let orphanedCache = [];
+let requestEpoch = 0;
+let removalInFlight = false;
+
 export function renderRegistry() {
   return `
-    <div class="page-header" style="display:flex; flex-direction:column; gap:16px;">
+    <div class="page-header tool-page-header">
       <div>
         <h1 class="page-title">Registro & Inicialização</h1>
-        <p style="color: var(--text-secondary); margin-top:4px; font-size:0.9rem;">Gerencie o que abre com o Windows e limpe entradas de registro órfãs.</p>
+        <p class="tool-page-subtitle">Gerencie o que abre com o Windows e limpe entradas de registro órfãs.</p>
       </div>
-      <div class="tab-bar" id="reg-tabs">
-        <button class="app-tab-btn active" data-tab="startup">Inicialização</button>
-        <button class="app-tab-btn" data-tab="cleaner">Limpador de Registro</button>
+      <div class="tab-bar tool-tabs" id="reg-tabs" role="tablist" aria-label="Seções de registro">
+        <button class="app-tab-btn active" data-tab="startup" type="button" role="tab" aria-selected="true">Inicialização</button>
+        <button class="app-tab-btn" data-tab="cleaner" type="button" role="tab" aria-selected="false">Limpador de Registro</button>
       </div>
     </div>
-    <div class="page-content" style="max-height: calc(100vh - 230px); overflow-y:auto; padding-right:8px; margin-top:16px;" id="reg-content"></div>
+    <div class="page-content tool-page-content" id="reg-content" role="tabpanel" aria-live="polite"></div>
   `;
+}
+
+function loadingState(label) {
+  return `<div class="tool-state tool-state--loading" role="status"><div class="loading-spinner"></div><p>${escapeHtml(label)}</p></div>`;
 }
 
 function itemRow({ id, name, subtitle, enabled, badge }) {
   return `
-    <div class="clean-item" data-item-id="${id}">
-      <div class="clean-info" style="flex:1;">
-        <div class="clean-name">${name} ${badge ? `<span class="badge" style="margin:0 0 0 6px;">${badge}</span>` : ''}</div>
-        <div class="clean-desc" style="word-break: break-all;">${subtitle}</div>
+    <div class="clean-item" data-item-id="${escapeHtml(id)}">
+      <div class="clean-info clean-info--grow">
+        <div class="clean-name">${escapeHtml(name)} ${badge ? `<span class="badge badge--inline">${escapeHtml(badge)}</span>` : ''}</div>
+        <div class="clean-desc clean-desc--path">${escapeHtml(subtitle)}</div>
       </div>
-      <label class="toggle-switch">
-        <input type="checkbox" class="reg-toggle" data-id="${id}" ${enabled ? 'checked' : ''}>
+      <label class="toggle-switch" aria-label="Abrir ${escapeHtml(name)} com o Windows">
+        <input type="checkbox" class="reg-toggle" data-id="${escapeHtml(id)}" ${enabled ? 'checked' : ''}>
         <span class="toggle-slider"></span>
       </label>
     </div>
   `;
 }
 
-let startupCache = [];
-
 async function renderStartupTab() {
+  const epoch = ++requestEpoch;
   const content = document.getElementById('reg-content');
-  content.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-secondary);"><div class="loading-spinner"></div></div>`;
+  if (!content) return;
+  content.setAttribute('aria-busy', 'true');
+  content.innerHTML = loadingState('Carregando itens de inicialização...');
 
   try {
-    startupCache = await window.pulso.listStartup();
+    const nextItems = await window.pulso.listStartup();
+    if (epoch !== requestEpoch || !document.getElementById('reg-content')) return;
+    startupCache = Array.isArray(nextItems) ? nextItems : [];
   } catch (e) {
-    content.innerHTML = `<div style="color:#f87171; padding:20px;">Erro ao carregar itens de inicialização.</div>`;
+    if (epoch !== requestEpoch) return;
+    content.innerHTML = `<div class="tool-state tool-state--error" role="alert">Erro ao carregar itens de inicialização. <button class="btn-secondary tool-state-action" id="reg-startup-retry" type="button">Tentar novamente</button></div>`;
+    document.getElementById('reg-startup-retry')?.addEventListener('click', renderStartupTab);
     return;
+  } finally {
+    if (epoch === requestEpoch) content.removeAttribute('aria-busy');
   }
 
   if (startupCache.length === 0) {
-    content.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-secondary);">Nenhum item de inicialização encontrado.</div>`;
+    content.innerHTML = `<div class="tool-state tool-state--empty" role="status">Nenhum item de inicialização encontrado.</div>`;
     return;
   }
 
@@ -56,20 +74,19 @@ async function renderStartupTab() {
   })).join('');
 
   content.innerHTML = `<div class="clean-list">${rows}</div>`;
-
   content.querySelectorAll('.reg-toggle').forEach((toggle) => {
-    toggle.addEventListener('change', async (e) => {
-      const item = startupCache.find((i) => i.id === toggle.dataset.id);
-      if (!item) return;
+    toggle.addEventListener('change', async (event) => {
+      const item = startupCache.find((candidate) => candidate.id === toggle.dataset.id);
+      if (!item || toggle.disabled) return;
       toggle.disabled = true;
       try {
-        if (e.target.checked) {
-          await window.pulso.enableStartup(item);
-        } else {
-          await window.pulso.disableStartup(item);
-        }
-      } catch (err) {
-        e.target.checked = !e.target.checked;
+        const result = event.target.checked
+          ? await window.pulso.enableStartup(item)
+          : await window.pulso.disableStartup(item);
+        if (!result?.ok) throw new Error('Alteração não confirmada');
+        item.enabled = event.target.checked;
+      } catch (error) {
+        event.target.checked = !event.target.checked;
         window.showAlertModal('Erro', 'Não foi possível alterar este item. Pode ser necessário executar o Takeda App como administrador.');
       } finally {
         toggle.disabled = false;
@@ -78,91 +95,143 @@ async function renderStartupTab() {
   });
 }
 
-let orphanedCache = [];
-
 function renderCleanerTab() {
+  ++requestEpoch;
   const content = document.getElementById('reg-content');
+  if (!content) return;
   content.innerHTML = `
-    <div style="text-align:center; padding:40px 20px; color:var(--text-secondary);">
-      <p style="margin-bottom:20px; max-width:480px; margin-left:auto; margin-right:auto; line-height:1.5;">
-        Procura por entradas de "Programas e Recursos" e atalhos de aplicativos (App Paths) que apontam para arquivos que não existem mais.
-        Antes de remover qualquer entrada, um backup <strong>.reg</strong> é criado automaticamente.
-      </p>
-      <button class="btn-primary" id="reg-scan-btn" style="width:auto; padding:10px 28px;">Escanear Registro</button>
+    <div class="tool-state tool-state--intro">
+      <p class="tool-state-copy">Procura por entradas de "Programas e Recursos" e atalhos de aplicativos (App Paths) que apontam para arquivos que não existem mais. Antes de remover qualquer entrada, um backup <strong>.reg</strong> é criado automaticamente.</p>
+      <button class="btn-primary tool-action-button" id="reg-scan-btn" type="button">Escanear Registro</button>
     </div>
   `;
-  document.getElementById('reg-scan-btn').addEventListener('click', runOrphanedScan);
+  document.getElementById('reg-scan-btn')?.addEventListener('click', runOrphanedScan);
 }
 
 async function runOrphanedScan() {
+  const epoch = ++requestEpoch;
   const content = document.getElementById('reg-content');
-  content.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-secondary);"><div class="loading-spinner" style="margin-bottom:16px;"></div><p>Escaneando entradas de registro...</p></div>`;
+  if (!content) return;
+  content.setAttribute('aria-busy', 'true');
+  content.innerHTML = loadingState('Escaneando entradas de registro...');
 
   try {
-    orphanedCache = await window.pulso.scanOrphanedRegistry();
+    const result = await window.pulso.scanOrphanedRegistry();
+    if (epoch !== requestEpoch || !document.getElementById('reg-content')) return;
+    if (!Array.isArray(result)) throw new Error('Resposta inválida');
+    orphanedCache = result;
   } catch (e) {
-    orphanedCache = [];
+    if (epoch !== requestEpoch) return;
+    content.innerHTML = `<div class="tool-state tool-state--error" role="alert">Não foi possível escanear o registro. <button class="btn-secondary tool-state-action" id="reg-scan-retry" type="button">Tentar novamente</button></div>`;
+    document.getElementById('reg-scan-retry')?.addEventListener('click', runOrphanedScan);
+    return;
+  } finally {
+    if (epoch === requestEpoch) content.removeAttribute('aria-busy');
   }
 
   if (orphanedCache.length === 0) {
     content.innerHTML = `
-      <div style="text-align:center; padding:40px; color:var(--text-secondary);">
-        <p style="margin-bottom:20px;">Nenhuma entrada órfã encontrada. Seu registro está limpo nas categorias verificadas.</p>
-        <button class="btn-secondary" id="reg-scan-again" style="width:auto; padding:9px 18px;">Escanear Novamente</button>
+      <div class="tool-state tool-state--empty" role="status">
+        <p>Nenhuma entrada órfã encontrada. Seu registro está limpo nas categorias verificadas.</p>
+        <button class="btn-secondary tool-state-action" id="reg-scan-again" type="button">Escanear Novamente</button>
       </div>
     `;
-    document.getElementById('reg-scan-again').addEventListener('click', runOrphanedScan);
+    document.getElementById('reg-scan-again')?.addEventListener('click', runOrphanedScan);
     return;
   }
 
   const rows = orphanedCache.map((entry) => `
-    <div class="clean-item">
-      <input type="checkbox" class="clean-check orphan-check" data-id="${entry.id}" checked>
-      <div class="clean-info">
-        <div class="clean-name">${entry.displayName} <span class="badge" style="margin:0 0 0 6px;">${entry.category === 'uninstall' ? 'Programa' : 'App Path'}</span></div>
-        <div class="clean-desc" style="word-break: break-all;">Caminho não encontrado: ${entry.checkedPath}</div>
-      </div>
-    </div>
+    <label class="clean-item clean-item--selectable">
+      <input type="checkbox" class="clean-check orphan-check" data-id="${escapeHtml(entry.id)}" checked>
+      <span class="clean-info">
+        <span class="clean-name">${escapeHtml(entry.displayName)} <span class="badge badge--inline">${entry.category === 'uninstall' ? 'Programa' : 'App Path'}</span></span>
+        <span class="clean-desc clean-desc--path">Caminho não encontrado: ${escapeHtml(entry.checkedPath)}</span>
+      </span>
+    </label>
   `).join('');
 
   content.innerHTML = `
     <div class="clean-list">${rows}</div>
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; padding-top:16px; border-top:1px solid var(--border-color);">
-      <span style="color:var(--text-secondary); font-size:0.85rem;">${orphanedCache.length} entradas encontradas · backup .reg será criado antes de remover</span>
-      <button class="btn-primary" id="reg-remove-btn" style="width:auto; padding:10px 24px;">Remover Selecionadas</button>
+    <div class="tool-action-row">
+      <span class="tool-action-summary" id="reg-selected-count">${orphanedCache.length} de ${orphanedCache.length} entradas selecionadas · backup .reg será criado</span>
+      <button class="btn-primary tool-action-button" id="reg-remove-btn" type="button">Remover Selecionadas</button>
     </div>
   `;
 
-  document.getElementById('reg-remove-btn').addEventListener('click', () => {
-    const checked = document.querySelectorAll('.orphan-check:checked');
-    const ids = Array.from(checked).map((c) => c.dataset.id);
-    if (ids.length === 0) return;
+  content.querySelectorAll('.orphan-check').forEach((checkbox) => checkbox.addEventListener('change', updateOrphanSelection));
+  document.getElementById('reg-remove-btn')?.addEventListener('click', confirmOrphanRemoval);
+  updateOrphanSelection();
+}
 
-    window.showConfirmModal(
-      'Remover entradas de registro',
-      `Isso vai remover ${ids.length} entrada(s) do registro (com backup .reg salvo antes). Continuar?`,
-      async () => {
-        const selected = orphanedCache.filter((e) => ids.includes(e.id));
-        try {
-          await window.pulso.removeOrphanedRegistry(selected);
-          window.showAlertModal('Concluído', 'Entradas removidas. Os backups .reg ficam salvos na pasta de dados do Takeda App.', () => runOrphanedScan());
-        } catch (e) {
-          window.showAlertModal('Erro', 'Não foi possível remover as entradas selecionadas.');
-        }
-      }
-    );
+function updateOrphanSelection() {
+  const selected = document.querySelectorAll('.orphan-check:checked').length;
+  const summary = document.getElementById('reg-selected-count');
+  const button = document.getElementById('reg-remove-btn');
+  if (summary) summary.textContent = `${selected} de ${orphanedCache.length} entradas selecionadas · backup .reg será criado`;
+  if (button) button.disabled = removalInFlight || selected === 0;
+}
+
+function setRemovalLock(locked, button) {
+  removalInFlight = locked;
+  document.querySelectorAll('.orphan-check, #reg-tabs .app-tab-btn').forEach((control) => {
+    control.disabled = locked;
   });
+  if (button) {
+    button.disabled = locked;
+    button.textContent = locked ? 'Removendo...' : 'Remover Selecionadas';
+  }
+}
+
+function confirmOrphanRemoval() {
+  const button = document.getElementById('reg-remove-btn');
+  if (!button || button.disabled || removalInFlight) return;
+  const ids = Array.from(document.querySelectorAll('.orphan-check:checked'), (checkbox) => checkbox.dataset.id);
+  if (ids.length === 0) return;
+
+  window.showConfirmModal(
+    'Remover entradas de registro',
+    `Isso vai remover ${ids.length} entrada(s) do registro (com backup .reg salvo antes). Continuar?`,
+    async () => {
+      if (removalInFlight) return;
+      setRemovalLock(true, button);
+      const selected = orphanedCache.filter((entry) => ids.includes(entry.id));
+      try {
+        const results = await window.pulso.removeOrphanedRegistry(selected);
+        if (!Array.isArray(results)) throw new Error('Resposta inválida');
+        const removed = results.filter((result) => result.status === 'OK').length;
+        const failed = results.length - removed;
+        if (removed === 0) throw new Error('Nenhuma entrada removida');
+        const detail = failed > 0
+          ? `${removed} entrada(s) removida(s); ${failed} falharam. Os backups disponíveis foram salvos na pasta de dados do Takeda App.`
+          : `${removed} entrada(s) removida(s). Os backups .reg ficam salvos na pasta de dados do Takeda App.`;
+        window.showAlertModal(failed > 0 ? 'Concluído com ressalvas' : 'Concluído', detail, () => runOrphanedScan());
+      } catch (e) {
+        window.showAlertModal('Erro', 'Não foi possível confirmar a remoção das entradas selecionadas.');
+      } finally {
+        setRemovalLock(false, button);
+        updateOrphanSelection();
+      }
+    }
+  );
 }
 
 export function initRegistry() {
-  document.querySelectorAll('#reg-tabs .app-tab-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('#reg-tabs .app-tab-btn').forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-      if (btn.dataset.tab === 'startup') renderStartupTab();
+  document.querySelectorAll('#reg-tabs .app-tab-btn').forEach((button) => {
+    button.addEventListener('click', () => {
+      if (removalInFlight) return;
+      document.querySelectorAll('#reg-tabs .app-tab-btn').forEach((candidate) => {
+        const active = candidate === button;
+        candidate.classList.toggle('active', active);
+        candidate.setAttribute('aria-selected', String(active));
+      });
+      if (button.dataset.tab === 'startup') void renderStartupTab();
       else renderCleanerTab();
     });
   });
 
-  renderStartupTab();
+  void renderStartupTab();
+
+  return () => {
+    requestEpoch += 1;
+  };
 }

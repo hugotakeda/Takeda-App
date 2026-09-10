@@ -1,38 +1,17 @@
 const { execFile } = require('child_process');
-const path = require('path');
-const fs = require('fs');
-const os = require('os');
+const { runElevated } = require('./elevated');
 
 function runPS(script, timeout = 20000) {
   return new Promise((resolve, reject) => {
     execFile(
       'powershell.exe',
-      ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', script],
-      { timeout, maxBuffer: 1024 * 1024 * 8 },
-      (err, stdout) => {
-        if (err) reject(err);
+      ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', script],
+      { timeout, windowsHide: true, maxBuffer: 1024 * 1024 * 8 },
+      (err, stdout, stderr) => {
+        if (err) reject(Object.assign(err, { stderr: String(stderr || '').trim() }));
         else resolve((stdout || '').trim());
       }
     );
-  });
-}
-
-function runPSElevated(script, timeout = 60000) {
-  return new Promise((resolve, reject) => {
-    const tmpFile = path.join(os.tmpdir(), `takeda-priv-${Date.now()}.ps1`);
-    fs.writeFileSync(tmpFile, script, 'utf-8');
-    const wrapper = `
-      $ErrorActionPreference = 'SilentlyContinue'
-      Start-Process powershell.exe -Verb RunAs -Wait -WindowStyle Hidden -ArgumentList @(
-        '-NoProfile','-ExecutionPolicy','Bypass','-File','${tmpFile.replace(/'/g, "''")}'
-      )
-      Write-Output "DONE"
-    `;
-    execFile('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', wrapper], { timeout }, (err, stdout) => {
-      try { fs.unlinkSync(tmpFile); } catch (e) {}
-      if (err) reject(err);
-      else resolve((stdout || '').trim());
-    });
   });
 }
 
@@ -172,13 +151,8 @@ async function getStatus() {
     $out | ConvertTo-Json -Compress
   `;
 
-  let raw = {};
-  try {
-    const out = await runPS(script);
-    raw = out ? JSON.parse(out) : {};
-  } catch (e) {
-    raw = {};
-  }
+  const out = await runPS(script);
+  const raw = out ? JSON.parse(out) : {};
 
   const status = {};
   for (const t of TOGGLES) {
@@ -195,13 +169,13 @@ function buildWriteScript(toggle, protect) {
     const safeKey = target.key.replace(/'/g, "''");
     const safeVal = target.value.replace(/'/g, "''");
     if (data === null) {
-      return `Remove-ItemProperty -Path '${safeKey}' -Name '${safeVal}' -Force -ErrorAction SilentlyContinue`;
+      return `if (Test-Path -LiteralPath '${safeKey}') { Remove-ItemProperty -LiteralPath '${safeKey}' -Name '${safeVal}' -Force -ErrorAction SilentlyContinue }`;
     }
     const propType = target.type === 'String' ? 'String' : 'DWord';
     const dataLiteral = target.type === 'String' ? `'${String(data).replace(/'/g, "''")}'` : Number(data);
     return `
-      if (-not (Test-Path '${safeKey}')) { New-Item -Path '${safeKey}' -Force | Out-Null }
-      New-ItemProperty -Path '${safeKey}' -Name '${safeVal}' -PropertyType ${propType} -Value ${dataLiteral} -Force | Out-Null
+      if (-not (Test-Path -LiteralPath '${safeKey}')) { New-Item -Path '${safeKey}' -Force -ErrorAction Stop | Out-Null }
+      New-ItemProperty -LiteralPath '${safeKey}' -Name '${safeVal}' -PropertyType ${propType} -Value ${dataLiteral} -Force -ErrorAction Stop | Out-Null
     `;
   }).join('\n');
 }
@@ -211,14 +185,18 @@ async function setToggle(id, protect) {
   if (!toggle) throw new Error('Toggle desconhecido: ' + id);
 
   const script = `
-    $ErrorActionPreference = 'SilentlyContinue'
+    $ErrorActionPreference = 'Stop'
     ${buildWriteScript(toggle, protect)}
-    Write-Output "OK"
   `;
 
-  const runner = toggle.requiresAdmin ? runPSElevated : runPS;
-  await runner(script);
-  return { ok: true };
+  if (toggle.requiresAdmin) await runElevated(script, 60000);
+  else await runPS(script);
+
+  const current = await getStatus();
+  if (current[id]?.enabled !== protect) {
+    throw new Error('O Windows não confirmou a alteração solicitada');
+  }
+  return { ok: true, enabled: protect };
 }
 
 function list() {

@@ -5,8 +5,8 @@
 
   <p>
     <img src="https://img.shields.io/badge/plataforma-Windows-0078D4?style=flat-square&logo=windows&logoColor=white" />
-    <img src="https://img.shields.io/badge/electron-v32-47848F?style=flat-square&logo=electron&logoColor=white" />
-    <img src="https://img.shields.io/badge/versão-1.0.8-4ade80?style=flat-square" />
+    <img src="https://img.shields.io/badge/electron-v44-47848F?style=flat-square&logo=electron&logoColor=white" />
+    <img src="https://img.shields.io/badge/versão-1.1.1-b7a7f5?style=flat-square" />
     <img src="https://img.shields.io/badge/licença-MIT-blue?style=flat-square" />
     <img src="https://img.shields.io/badge/auth-Discord%20OAuth2-5865F2?style=flat-square&logo=discord&logoColor=white" />
   </p>
@@ -22,7 +22,9 @@
 
 ## 📋 Sobre
 
-O **Takeda App** é um aplicativo desktop para Windows que oferece um painel completo de monitoramento, diagnóstico, limpeza e otimização do seu sistema operacional. Desenvolvido com **Electron**, ele combina uma interface moderna e elegante (dark mode com layout em sidebar) com ferramentas poderosas de nível nativo via PowerShell e WMI.
+O **Takeda App** é um aplicativo desktop para Windows que oferece um painel completo de monitoramento, diagnóstico, limpeza e otimização do sistema operacional. Desenvolvido com **Electron**, ele combina ferramentas nativas via PowerShell e WMI com uma interface redesenhada em obsidiana, marfim e lavanda, alinhada ao novo ícone Takeda.
+
+A versão **1.1.1** também reorganiza a área de Ferramentas, mantém as sete categorias visíveis e adiciona regiões de rolagem reais para listas extensas de Privacidade, Debloat e Limpeza Avançada. Consulte o [CHANGELOG](CHANGELOG.md) para o histórico completo.
 
 O aplicativo agora conta com o sistema inteligente de **Atualizações OTA (On-The-Air)**, garantindo que o seu sistema sempre receba novas versões automaticamente em segundo plano de forma contínua e sem necessidade de downloads manuais.
 
@@ -100,7 +102,7 @@ https://github.com/user-attachments/assets/48310890-6df3-47a2-85dc-6cf7b4708fea
 
 ## 🏗️ Arquitetura
 
-O projeto utiliza um frontend em HTML/CSS Puro focado em **alta performance**, se conectando aos recursos de sistema através da bridge IPC do Electron.
+O projeto utiliza um frontend em HTML/CSS puro focado em **alta performance**, conectado aos recursos de sistema por uma bridge IPC restrita do Electron.
 
 ```
 Takeda App/
@@ -123,11 +125,14 @@ Takeda App/
 │       ├── privacy.js        # Central de Privacidade (ajustes reversíveis)
 │       ├── malware.js        # Integração com Windows Defender
 │       ├── debloat.js        # Remoção de apps opcionais do Windows
+│       ├── elevated.js       # Execução administrativa codificada e validada
 │       └── antiTamper.js     # Proteção anti-engenharia reversa
 ├── src/                      # Processo renderer (UI)
 │   ├── index.html            # Estrutura base da aplicação e Sidebar
-│   ├── index.css             # Estilos (Dark mode, Flex grids)
+│   ├── index.css             # Design system obsidiana/marfim/lavanda
 │   ├── app.js                # Roteamento e orquestração visual
+│   ├── modal.js              # Infraestrutura acessível de diálogos
+│   ├── ui.js                 # Escape, URLs seguras e formatação
 │   └── pages/                # Estruturas da injeção de navegação
 │       ├── Tools.js           # Hub da aba "Ferramentas"
 │       ├── AdvancedCleanup.js # Limpeza Avançada
@@ -137,9 +142,11 @@ Takeda App/
 │       ├── Shredder.js        # Exclusão Segura
 │       ├── Malware.js         # Segurança (Windows Defender)
 │       └── Debloat.js         # Debloat do Windows
-└── assets/                   # Recursos estáticos
-    ├── takeda.pow            # Perfil do Powerplan
-    └── *.png/ico             # Logos e Ícones
+├── assets/                   # Recursos estáticos
+│   ├── takeda.pow            # Perfil do Powerplan
+│   └── *.png/ico/svg         # Logo e ícones oficiais
+├── test/                     # Testes de segurança, serviços e interface
+└── .github/workflows/        # Verificação automática em push e pull request
 ```
 
 ---
@@ -147,7 +154,7 @@ Takeda App/
 ## 💻 Rodando Localmente
 
 ### Pré-requisitos
-- [Node.js](https://nodejs.org/) v18+
+- [Node.js](https://nodejs.org/) v22.12+
 - Windows 10/11
 - Conta ativa no Discord
 
@@ -163,6 +170,17 @@ npm install
 # Inicie no modo desenvolvedor
 npm run dev
 ```
+
+### Qualidade & Testes
+```bash
+# Valida sintaxe e contratos IPC
+npm run check
+
+# Executa testes de segurança, serviços e interface
+npm test
+```
+
+O workflow `Quality` executa essas duas verificações automaticamente no Windows a cada push para `main` e em pull requests.
 
 ### Build & Release
 ```bash

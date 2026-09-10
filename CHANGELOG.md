@@ -1,5 +1,32 @@
 # Changelog
 
+## [1.1.1] - 2026-09-09
+
+### Correções de interface
+- Reorganizada a navegação de Ferramentas para manter as sete categorias inteiramente visíveis e com espaçamento uniforme.
+- Adicionada rolagem vertical real às listas de todas as ferramentas, incluindo Privacidade, Debloat e categorias da Limpeza Avançada.
+- Barras de ação agora permanecem acessíveis no rodapé das listas longas; botões de cabeçalho voltaram ao formato compacto.
+- Adicionada navegação entre abas com setas, Home e End, além de foco explícito na região rolável.
+- O QA de interface agora usa catálogos extensos para impedir que listas curtas mascarem regressões de overflow.
+
+## [1.1.0] - 2026-09-09
+
+### Nova identidade visual
+- Interface redesenhada em obsidiana, marfim e lavanda para acompanhar o novo ícone Takeda.
+- Dashboard, autenticação, loja de aplicativos, histórico e todas as ferramentas receberam uma linguagem visual unificada, responsiva e mais acessível.
+- Novo fluxo de inicialização, modais com navegação por teclado e estados de carregamento, erro e conclusão consistentes.
+
+### Desempenho e estabilidade
+- Analisador de disco refeito para calcular pastas, extensões e maiores arquivos em uma única varredura cancelável.
+- Limpeza com concorrência limitada, medição dos bytes realmente removidos e resultados parciais explícitos.
+- Navegação rápida agora encerra monitores, timers, listeners e processos de páginas anteriores.
+
+### Segurança e correções
+- IPC validado e recursos sensíveis protegidos por permissões temporárias emitidas pelo processo principal.
+- Inicialização, Registro, Exclusão Segura, Debloat e Privacidade agora validam alvos e confirmam o resultado real antes de informar sucesso.
+- Scripts administrativos executados de forma codificada, sem arquivos temporários vulneráveis, e com propagação correta do código de saída.
+- Conteúdo dinâmico escapado, navegação externa restrita a HTTPS e Electron atualizado com fuses de produção reforçados.
+
 ## [1.0.8] - 2026-09-07
 
 ### ✨ Nova aba "Ferramentas"

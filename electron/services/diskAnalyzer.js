@@ -2,17 +2,31 @@ const { execFile } = require('child_process');
 const os = require('os');
 const path = require('path');
 
-function runPS(script, timeout = 60000) {
+let activeScan = null;
+
+function cancelScan() {
+  if (!activeScan) return;
+  activeScan.kill();
+  activeScan = null;
+}
+
+function runScanScript(script, timeout = 90000) {
+  cancelScan();
   return new Promise((resolve, reject) => {
-    execFile(
+    const child = execFile(
       'powershell.exe',
-      ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', script],
-      { timeout, maxBuffer: 1024 * 1024 * 32 },
-      (err, stdout) => {
-        if (err) reject(err);
-        else resolve((stdout || '').trim());
-      }
+      ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', script],
+      { timeout, windowsHide: true, maxBuffer: 32 * 1024 * 1024 },
+      (error, stdout, stderr) => {
+        if (activeScan === child) activeScan = null;
+        if (error) {
+          reject(Object.assign(error, { stderr: String(stderr || '').trim() }));
+          return;
+        }
+        resolve(String(stdout || '').trim());
+      },
     );
+    activeScan = child;
   });
 }
 
@@ -30,56 +44,86 @@ function shortcuts() {
   ];
 }
 
-// Escaneia uma pasta e devolve: maiores subpastas/arquivos diretos,
-// os N maiores arquivos (recursivo) e um resumo por extensão.
+// Faz uma única travessia do disco. A versão anterior repetia a mesma
+// enumeração quatro vezes para calcular cada painel, multiplicando o custo
+// em pastas grandes.
 async function scanFolder(rootPath) {
   const safeRoot = rootPath.replace(/'/g, "''");
   const script = `
-    $ErrorActionPreference = 'SilentlyContinue'
+    $ErrorActionPreference = 'Stop'
     $root = '${safeRoot}'
+    $rootItem = Get-Item -LiteralPath $root -Force
+    if (-not $rootItem.PSIsContainer) { throw 'O caminho selecionado não é uma pasta.' }
 
-    $children = @()
-    Get-ChildItem -LiteralPath $root -Force -ErrorAction SilentlyContinue | ForEach-Object {
-      $size = 0
-      if ($_.PSIsContainer) {
-        $size = (Get-ChildItem -LiteralPath $_.FullName -Recurse -Force -File -ErrorAction SilentlyContinue |
-          Measure-Object -Property Length -Sum).Sum
-        if (-not $size) { $size = 0 }
-      } else {
-        $size = $_.Length
+    $rootFull = $rootItem.FullName.TrimEnd('\\')
+    $directItems = @(Get-ChildItem -LiteralPath $rootFull -Force -ErrorAction SilentlyContinue)
+    $childMap = @{}
+    foreach ($item in $directItems) {
+      $key = $item.Name.ToLowerInvariant()
+      $childMap[$key] = [ordered]@{
+        name = $item.Name
+        path = $item.FullName
+        size = [int64]0
+        isDir = [bool]$item.PSIsContainer
       }
-      $children += [PSCustomObject]@{ name=$_.Name; path=$_.FullName; size=[int64]$size; isDir=[bool]$_.PSIsContainer }
     }
 
-    $topFiles = Get-ChildItem -LiteralPath $root -Recurse -Force -File -ErrorAction SilentlyContinue |
-      Sort-Object Length -Descending | Select-Object -First 25 |
-      ForEach-Object { [PSCustomObject]@{ name=$_.Name; path=$_.FullName; size=[int64]$_.Length; ext=$_.Extension } }
+    [int64]$total = 0
+    $extensions = @{}
+    $topFiles = @()
 
-    $extGroups = Get-ChildItem -LiteralPath $root -Recurse -Force -File -ErrorAction SilentlyContinue |
-      Group-Object Extension | ForEach-Object {
-        [PSCustomObject]@{
-          ext = if ($_.Name) { $_.Name } else { '(sem extensão)' }
-          count = $_.Count
-          size = [int64]([long]($_.Group | Measure-Object -Property Length -Sum).Sum)
+    Get-ChildItem -LiteralPath $rootFull -Recurse -Force -File -ErrorAction SilentlyContinue | ForEach-Object {
+      [int64]$length = $_.Length
+      $total += $length
+
+      $relative = $_.FullName.Substring($rootFull.Length).TrimStart('\\')
+      $separator = $relative.IndexOf('\\')
+      $firstPart = if ($separator -ge 0) { $relative.Substring(0, $separator) } else { $relative }
+      $childKey = $firstPart.ToLowerInvariant()
+      if ($childMap.ContainsKey($childKey)) { $childMap[$childKey].size += $length }
+
+      $extension = if ($_.Extension) { $_.Extension.ToLowerInvariant() } else { '(sem extensão)' }
+      if (-not $extensions.ContainsKey($extension)) {
+        $extensions[$extension] = [ordered]@{ ext = $extension; count = 0; size = [int64]0 }
+      }
+      $extensions[$extension].count += 1
+      $extensions[$extension].size += $length
+
+      $record = [PSCustomObject]@{ name=$_.Name; path=$_.FullName; size=$length; ext=$_.Extension }
+      if ($topFiles.Count -lt 25) {
+        $topFiles += $record
+      } else {
+        $smallestIndex = 0
+        for ($i = 1; $i -lt $topFiles.Count; $i++) {
+          if ($topFiles[$i].size -lt $topFiles[$smallestIndex].size) { $smallestIndex = $i }
         }
-      } | Sort-Object size -Descending | Select-Object -First 12
+        if ($length -gt $topFiles[$smallestIndex].size) { $topFiles[$smallestIndex] = $record }
+      }
+    }
 
-    $rootTotal = (Get-ChildItem -LiteralPath $root -Recurse -Force -File -ErrorAction SilentlyContinue |
-      Measure-Object -Property Length -Sum).Sum
-    if (-not $rootTotal) { $rootTotal = 0 }
+    $children = @($directItems | ForEach-Object { [PSCustomObject]$childMap[$_.Name.ToLowerInvariant()] } | Sort-Object size -Descending)
+    $topFiles = @($topFiles | Sort-Object size -Descending)
+    $extGroups = @($extensions.Values | ForEach-Object { [PSCustomObject]$_ } | Sort-Object size -Descending | Select-Object -First 12)
 
-    @{
-      root = $root
-      totalSize = [int64]$rootTotal
-      children = @($children | Sort-Object size -Descending)
-      topFiles = @($topFiles)
-      byExtension = @($extGroups)
+    [ordered]@{
+      root = $rootItem.FullName
+      totalSize = $total
+      children = $children
+      topFiles = $topFiles
+      byExtension = $extGroups
     } | ConvertTo-Json -Compress -Depth 5
   `;
 
-  const out = await runPS(script, 90000);
-  if (!out) return { root: rootPath, totalSize: 0, children: [], topFiles: [], byExtension: [] };
-  return JSON.parse(out);
+  const output = await runScanScript(script);
+  if (!output) return { root: rootPath, totalSize: 0, children: [], topFiles: [], byExtension: [] };
+  const parsed = JSON.parse(output);
+  return {
+    root: String(parsed.root || rootPath),
+    totalSize: Number(parsed.totalSize) || 0,
+    children: Array.isArray(parsed.children) ? parsed.children : [],
+    topFiles: Array.isArray(parsed.topFiles) ? parsed.topFiles : [],
+    byExtension: Array.isArray(parsed.byExtension) ? parsed.byExtension : [],
+  };
 }
 
-module.exports = { shortcuts, scanFolder };
+module.exports = { shortcuts, scanFolder, cancelScan };

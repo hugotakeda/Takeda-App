@@ -6,14 +6,20 @@ let pingIntervalId = null;
 let buffer = { cpu: [], ram: [], lat: [] };
 const MAX_POINTS = 60;
 let previousCpuInfo = os.cpus();
-let pingValue = 0;
-let packetLoss = 0;
+let pingValue = -1;
+let packetLoss = 100;
+let activePing = null;
 
 // Helper for CPU usage calculation
 function getCpuUsage() {
   const currentCpuInfo = os.cpus();
   let idleDiff = 0;
   let totalDiff = 0;
+
+  if (currentCpuInfo.length !== previousCpuInfo.length) {
+    previousCpuInfo = currentCpuInfo;
+    return 0;
+  }
 
   for (let i = 0; i < currentCpuInfo.length; i++) {
     const cpu = currentCpuInfo[i];
@@ -32,8 +38,10 @@ function getCpuUsage() {
 
 // Background ping
 function checkPing() {
-  execFile('ping', ['-n', '1', '-w', '1000', '8.8.8.8'], (err, stdout) => {
-    if (err || stdout.includes('unreachable') || stdout.includes('timed out')) {
+  if (activePing) return;
+  activePing = execFile('ping.exe', ['-n', '1', '-w', '1000', '8.8.8.8'], { windowsHide: true, timeout: 3000 }, (err, stdout = '') => {
+    activePing = null;
+    if (err || /unreachable|timed out|inacessível|esgotado/i.test(stdout)) {
       packetLoss = 100;
       pingValue = -1;
     } else {
@@ -43,13 +51,21 @@ function checkPing() {
         packetLoss = 0;
       } else {
         pingValue = -1;
+        packetLoss = 100;
       }
     }
   });
 }
 
 function start(interval, callback) {
+  if (!Number.isFinite(interval)) throw new TypeError('Intervalo de monitoramento inválido');
+  if (typeof callback !== 'function') throw new TypeError('Callback de monitoramento inválido');
   if (intervalId) stop();
+  const pollInterval = Math.min(60000, Math.max(250, Math.trunc(interval)));
+  buffer = { cpu: [], ram: [], lat: [] };
+  previousCpuInfo = os.cpus();
+  pingValue = -1;
+  packetLoss = 100;
   
   // Initial ping
   checkPing();
@@ -66,7 +82,7 @@ function start(interval, callback) {
 
     buffer.cpu.push(cpuVal);
     buffer.ram.push(ramPctVal);
-    buffer.lat.push(pingValue > -1 ? pingValue : 0);
+    buffer.lat.push(pingValue);
     
     if (buffer.cpu.length > MAX_POINTS) buffer.cpu.shift();
     if (buffer.ram.length > MAX_POINTS) buffer.ram.shift();
@@ -87,7 +103,7 @@ function start(interval, callback) {
   };
 
   poll();
-  intervalId = setInterval(poll, interval);
+  intervalId = setInterval(poll, pollInterval);
 }
 
 function stop() {
@@ -98,6 +114,10 @@ function stop() {
   if (pingIntervalId) {
     clearInterval(pingIntervalId);
     pingIntervalId = null;
+  }
+  if (activePing) {
+    activePing.kill();
+    activePing = null;
   }
 }
 

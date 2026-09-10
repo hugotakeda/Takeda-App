@@ -43,65 +43,57 @@ const CATEGORIES = [
 ];
 
 let sizesCache = {};
-
-function formatBytes(bytes) {
-  if (!bytes) return '0 B';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-}
+let loadEpoch = 0;
+let cleanupInFlight = false;
 
 export function renderAdvancedCleanup() {
   const tabsHtml = CATEGORIES.map((cat, i) => `
-    <button class="app-tab-btn ${i === 0 ? 'active' : ''}" data-tab="${cat.id}">${CATEGORY_LABELS[cat.id]}</button>
+    <button class="app-tab-btn ${i === 0 ? 'active' : ''}" data-tab="${cat.id}" type="button" role="tab" aria-selected="${i === 0}">${CATEGORY_LABELS[cat.id]}</button>
   `).join('');
 
   return `
-    <div class="page-header" style="display:flex; flex-direction:column; gap:16px;">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
+    <div class="page-header tool-page-header">
+      <div class="tool-page-header--split">
         <div>
           <h1 class="page-title">Limpeza Avançada</h1>
-          <p style="color: var(--text-secondary); margin-top:4px; font-size:0.9rem;">Cache de navegadores, apps e jogos — baseado em regras, como no Kudu.</p>
+          <p class="tool-page-subtitle">Cache de navegadores, apps e jogos — baseado em regras, como no Kudu.</p>
         </div>
-        <button class="btn-secondary" id="adv-clean-recalc" style="width:auto; padding:9px 18px; flex-shrink:0;">Recalcular</button>
+        <button class="btn-secondary tool-header-action" id="adv-clean-recalc" type="button">Recalcular</button>
       </div>
-      <div class="tab-bar" id="adv-clean-tabs">
+      <div class="tab-bar tool-tabs" id="adv-clean-tabs" role="tablist" aria-label="Categorias de limpeza">
         ${tabsHtml}
       </div>
     </div>
-    <div class="page-content" style="max-height: calc(100vh - 210px); overflow-y:auto; padding-right:8px; margin-top:16px;" id="adv-clean-list"></div>
+    <div class="page-content tool-page-content tool-page-content--compact" id="adv-clean-list" aria-live="polite"></div>
   `;
 }
 
 function renderCategoryList(catId) {
   const cat = CATEGORIES.find((c) => c.id === catId);
   const container = document.getElementById('adv-clean-list');
-  // The selection summary/execute button lives inside this same scrollable
-  // container (not as a separate sibling below it) so it's always reachable
-  // via scroll no matter how tall the header/tabs above end up being.
+  if (!cat || !container) return;
   container.innerHTML = `
     <div class="clean-list"></div>
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; padding-top:16px; border-top:1px solid var(--border-color);">
-      <div><span style="color:var(--text-secondary);">Selecionado: </span><strong id="adv-clean-total">0 B</strong></div>
-      <button class="btn-primary" id="adv-clean-exec" disabled style="width:auto; padding:10px 28px;">Executar Limpeza</button>
+    <div class="tool-action-row">
+      <div class="tool-action-summary">Selecionado: <strong id="adv-clean-total">0 B</strong></div>
+      <button class="btn-primary tool-action-button" id="adv-clean-exec" type="button" disabled>Executar Limpeza</button>
     </div>
   `;
   const list = container.querySelector('.clean-list');
 
   cat.rules.forEach((rule) => {
     const size = sizesCache[rule.id] || 0;
-    const div = document.createElement('div');
-    div.className = 'clean-item';
-    div.innerHTML = `
+    const row = document.createElement('label');
+    row.className = 'clean-item clean-item--selectable';
+    row.innerHTML = `
       <input type="checkbox" class="clean-check adv-clean-check" data-id="${rule.id}" data-size="${size}" data-big="${!!rule.big}" ${size > 0 ? '' : 'disabled'}>
-      <div class="clean-info">
-        <div class="clean-name">${rule.name}${rule.big ? ' <span class="badge" style="color:#f87171; background:rgba(248,113,113,0.1); margin:0 0 0 6px;">Requer atenção</span>' : ''}</div>
-        <div class="clean-desc">${rule.desc}</div>
-      </div>
-      <div class="clean-size" style="color:${size > 0 ? 'var(--text-primary)' : 'var(--text-secondary)'}">${size > 0 ? formatBytes(size) : 'Vazio/Não encontrado'}</div>
+      <span class="clean-info">
+        <span class="clean-name">${rule.name}${rule.big ? ' <span class="badge badge--inline badge--danger">Requer atenção</span>' : ''}</span>
+        <span class="clean-desc">${rule.desc}</span>
+      </span>
+      <span class="clean-size ${size > 0 ? '' : 'is-empty'}">${size > 0 ? formatBytes(size) : 'Vazio/Não encontrado'}</span>
     `;
-    list.appendChild(div);
+    list.appendChild(row);
   });
 
   document.querySelectorAll('.adv-clean-check').forEach((chk) => chk.addEventListener('change', updateSelection));
@@ -112,38 +104,59 @@ function updateSelection() {
   const checked = document.querySelectorAll('.adv-clean-check:checked');
   let total = 0;
   checked.forEach((c) => (total += parseInt(c.dataset.size)));
-  document.getElementById('adv-clean-total').textContent = formatBytes(total);
-  document.getElementById('adv-clean-exec').disabled = total === 0;
+  const totalLabel = document.getElementById('adv-clean-total');
+  const button = document.getElementById('adv-clean-exec');
+  if (totalLabel) totalLabel.textContent = formatBytes(total);
+  if (button) button.disabled = cleanupInFlight || total === 0;
 }
 
 async function loadSizes() {
+  const epoch = ++loadEpoch;
   const container = document.getElementById('adv-clean-list');
-  container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-secondary);"><div class="loading-spinner" style="margin-bottom:16px;"></div><p>Calculando espaço ocupado...</p></div>`;
+  const recalc = document.getElementById('adv-clean-recalc');
+  if (!container) return;
+  if (recalc) recalc.disabled = true;
+  container.setAttribute('aria-busy', 'true');
+  container.innerHTML = `<div class="tool-state tool-state--loading" role="status"><div class="loading-spinner"></div><p>Calculando espaço ocupado...</p></div>`;
   try {
-    sizesCache = await window.pulso.getRuleSizes();
+    const result = await window.pulso.getRuleSizes();
+    if (epoch !== loadEpoch || !document.getElementById('adv-clean-list')) return;
+    sizesCache = result && typeof result === 'object' ? result : {};
   } catch (e) {
-    sizesCache = {};
+    if (epoch !== loadEpoch) return;
+    container.innerHTML = `<div class="tool-state tool-state--error" role="alert">Não foi possível calcular o espaço ocupado. <button class="btn-secondary tool-state-action" id="adv-clean-retry" type="button">Tentar novamente</button></div>`;
+    document.getElementById('adv-clean-retry')?.addEventListener('click', loadSizes);
+    return;
+  } finally {
+    if (epoch === loadEpoch) {
+      container.removeAttribute('aria-busy');
+      if (recalc) recalc.disabled = cleanupInFlight;
+    }
   }
   const activeTab = document.querySelector('#adv-clean-tabs .app-tab-btn.active');
   renderCategoryList(activeTab ? activeTab.dataset.tab : CATEGORIES[0].id);
 }
 
 export function initAdvancedCleanup() {
-  document.querySelectorAll('#adv-clean-tabs .app-tab-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('#adv-clean-tabs .app-tab-btn').forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-      renderCategoryList(btn.dataset.tab);
+  document.querySelectorAll('#adv-clean-tabs .app-tab-btn').forEach((button) => {
+    button.addEventListener('click', () => {
+      if (cleanupInFlight) return;
+      document.querySelectorAll('#adv-clean-tabs .app-tab-btn').forEach((candidate) => {
+        const active = candidate === button;
+        candidate.classList.toggle('active', active);
+        candidate.setAttribute('aria-selected', String(active));
+      });
+      renderCategoryList(button.dataset.tab);
     });
   });
 
-  document.getElementById('adv-clean-recalc').addEventListener('click', loadSizes);
+  document.getElementById('adv-clean-recalc')?.addEventListener('click', loadSizes);
 
   // Delegated: #adv-clean-exec is recreated by renderCategoryList() on every tab
   // switch, so a direct listener bound once at init would go stale after that.
   document.getElementById('adv-clean-list').addEventListener('click', (e) => {
     const btn = e.target.closest('#adv-clean-exec');
-    if (!btn || btn.disabled) return;
+    if (!btn || btn.disabled || cleanupInFlight) return;
 
     const checked = document.querySelectorAll('.adv-clean-check:checked');
     const ids = Array.from(checked).map((c) => c.dataset.id);
@@ -151,15 +164,33 @@ export function initAdvancedCleanup() {
     if (ids.length === 0) return;
 
     const run = async () => {
+      if (cleanupInFlight) return;
+      cleanupInFlight = true;
       btn.disabled = true;
       btn.textContent = 'Limpando...';
+      document.querySelectorAll('.adv-clean-check, #adv-clean-tabs .app-tab-btn, #adv-clean-recalc').forEach((control) => {
+        control.disabled = true;
+      });
       try {
         const res = await window.pulso.executeRules(ids);
-        window.showAlertModal('Limpeza concluída!', `Espaço liberado: ${formatBytes(res.totalFreed)}`, () => loadSizes());
+        if (!res || !Array.isArray(res.results)) throw new Error('Resposta inválida');
+        const partial = res.ok === false || Number(res.failed) > 0;
+        const detail = partial
+          ? `Espaço confirmado como liberado: ${formatBytes(res.totalFreed)}. Alguns itens estavam em uso ou exigem privilégios adicionais.`
+          : `Espaço liberado: ${formatBytes(res.totalFreed)}`;
+        window.showAlertModal(partial ? 'Concluído com ressalvas' : 'Limpeza concluída!', detail, () => loadSizes());
       } catch (e) {
         window.showAlertModal('Erro', 'Não foi possível concluir a limpeza avançada.');
       } finally {
+        cleanupInFlight = false;
         btn.textContent = 'Executar Limpeza';
+        document.querySelectorAll('#adv-clean-tabs .app-tab-btn, #adv-clean-recalc').forEach((control) => {
+          control.disabled = false;
+        });
+        document.querySelectorAll('.adv-clean-check').forEach((checkbox) => {
+          checkbox.disabled = Number(checkbox.dataset.size) <= 0;
+        });
+        updateSelection();
       }
     };
 
@@ -170,9 +201,14 @@ export function initAdvancedCleanup() {
         run
       );
     } else {
-      run();
+      void run();
     }
   });
 
-  loadSizes();
+  void loadSizes();
+
+  return () => {
+    loadEpoch += 1;
+  };
 }
+import { formatBytes } from '../ui.js';

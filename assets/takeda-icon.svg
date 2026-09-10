@@ -1,45 +1,43 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">Takeda App</title>
+  <desc id="desc">Monograma T dobrado em branco quente e lavanda sobre um ícone preto fosco.</desc>
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#141B24"/>
-      <stop offset="100%" stop-color="#080B0F"/>
+    <linearGradient id="surface" x1="138" y1="108" x2="870" y2="934" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#24222C"/>
+      <stop offset="0.48" stop-color="#111016"/>
+      <stop offset="1" stop-color="#08080C"/>
     </linearGradient>
-    <radialGradient id="glow" cx="50%" cy="88%" r="60%">
-      <stop offset="0%" stop-color="#2DD4A7" stop-opacity="0.22"/>
-      <stop offset="100%" stop-color="#2DD4A7" stop-opacity="0"/>
+    <radialGradient id="lavenderGlow" cx="0" cy="0" r="1" gradientTransform="translate(642 660) rotate(132) scale(370)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#AA91FF" stop-opacity="0.2"/>
+      <stop offset="1" stop-color="#AA91FF" stop-opacity="0"/>
     </radialGradient>
-    <linearGradient id="ring" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#54E7B3"/>
-      <stop offset="45%" stop-color="#3FCFC4"/>
-      <stop offset="100%" stop-color="#3F8CE8"/>
+    <linearGradient id="ivory" x1="354" y1="303" x2="604" y2="738" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#E9E7EE"/>
     </linearGradient>
-    <radialGradient id="dotGlow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#8FF6D2" stop-opacity="0.9"/>
-      <stop offset="100%" stop-color="#8FF6D2" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="letter" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#FFFFFF"/>
-      <stop offset="100%" stop-color="#E7ECF2"/>
+    <linearGradient id="fold" x1="573" y1="482" x2="699" y2="696" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E8E2FF"/>
+      <stop offset="1" stop-color="#8C73D9"/>
     </linearGradient>
+    <filter id="surfaceShadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="24" stdDeviation="34" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+    <filter id="markShadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="20" stdDeviation="21" flood-color="#000000" flood-opacity="0.42"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="16" flood-color="#B19CFF" flood-opacity="0.13"/>
+    </filter>
   </defs>
 
-  <!-- background squircle -->
-  <rect x="0" y="0" width="1024" height="1024" rx="224" ry="224" fill="url(#bg)"/>
-  <rect x="0" y="0" width="1024" height="1024" rx="224" ry="224" fill="url(#glow)"/>
+  <g filter="url(#surfaceShadow)">
+    <rect x="28" y="28" width="968" height="968" rx="226" fill="url(#surface)"/>
+    <rect x="29" y="29" width="966" height="966" rx="225" fill="url(#lavenderGlow)"/>
+    <rect x="29" y="29" width="966" height="966" rx="225" fill="none" stroke="#FFFFFF" stroke-opacity="0.1" stroke-width="2"/>
+  </g>
 
-  <!-- faint track ring -->
-  <circle cx="512" cy="512" r="336" fill="none" stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="46"/>
-
-  <!-- progress gauge arc -->
-  <path d="M 512.00 176.00 A 336 336 0 1 1 182.17 447.89" fill="none" stroke="url(#ring)" stroke-width="46" stroke-linecap="round"/>
-
-  <!-- tip glow + dot -->
-  <circle cx="182.17" cy="447.89" r="70" fill="url(#dotGlow)"/>
-  <circle cx="182.17" cy="447.89" r="27" fill="#8FF6D2"/>
-
-  <!-- T monogram -->
-  <g>
-    <rect x="362" y="342" width="300" height="76" rx="24" fill="url(#letter)"/>
-    <rect x="474" y="404" width="76" height="282" rx="20" fill="url(#letter)"/>
+  <g filter="url(#markShadow)">
+    <path d="M282 334C282 306 304 284 332 284H734C757 284 774 305 768 327L748 398C743 416 727 428 709 428H578V676C578 704 556 726 528 726H454C426 726 404 704 404 676V428H330C303 428 282 406 282 379V334Z" fill="url(#ivory)"/>
+    <path d="M578 428H709C727 428 743 416 748 398L768 327C774 305 757 284 734 284H659L578 428Z" fill="#F6F3FA"/>
+    <path d="M578 428L704 428L578 676V428Z" fill="url(#fold)"/>
+    <path d="M578 428L659 284H734C757 284 774 305 768 327L748 398C743 416 727 428 709 428H578Z" fill="#FFFFFF" fill-opacity="0.33"/>
   </g>
 </svg>

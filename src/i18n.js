@@ -1,28 +1,30 @@
 let currentTranslations = {};
 
 export async function initI18n() {
+  let locale = 'pt-BR';
   try {
-    let locale = 'en-US';
     if (window.pulso && window.pulso.getLocale) {
       locale = await window.pulso.getLocale();
     }
-    
-    // O app é majoritariamente hardcoded em pt-BR, então o padrão é português;
-    // só cai para inglês se o locale do sistema for claramente outro idioma.
-    let lang = 'pt';
-    if (locale && !locale.toLowerCase().startsWith('pt')) {
-      lang = 'en';
-    }
-    
-    const response = await fetch(`./locales/${lang}.json`);
-    if (response.ok) {
-      currentTranslations = await response.json();
-    } else {
-      console.warn(`Could not load locales/${lang}.json`);
-    }
   } catch (err) {
-    console.error("i18n init error:", err);
+    console.warn('[i18n] Não foi possível detectar o idioma; usando pt-BR.', err);
   }
+
+  const requestedLang = locale && !String(locale).toLowerCase().startsWith('pt') ? 'en' : 'pt';
+  const candidates = requestedLang === 'pt' ? ['pt'] : ['en', 'pt'];
+
+  for (const lang of candidates) {
+    try {
+      const response = await fetch(`./locales/${lang}.json`);
+      if (!response.ok) continue;
+      currentTranslations = await response.json();
+      return;
+    } catch (err) {
+      console.warn(`[i18n] Falha ao carregar locales/${lang}.json.`, err);
+    }
+  }
+
+  currentTranslations = {};
 }
 
 export function t(key) {

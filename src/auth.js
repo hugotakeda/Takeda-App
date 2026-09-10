@@ -8,15 +8,34 @@ import { backend } from './api.js';
  * token) so a revoke from the admin panel takes effect on next launch.
  */
 export async function resumeSession() {
-  const token = await window.pulso.auth.loadSession();
+  let token = null;
+  try {
+    token = await window.pulso.auth.loadSession();
+  } catch (error) {
+    console.warn('[Auth] Não foi possível ler a sessão local.', error);
+    return null;
+  }
   if (!token) return null;
 
-  const hwid = await window.pulso.auth.getHwid();
   try {
+    const hwid = await window.pulso.auth.getHwid();
     const res = await backend.verifySession(token, hwid);
+    if (!res?.user) throw Object.assign(new Error('Resposta de sessão inválida.'), { code: 'INVALID_RESPONSE' });
     return { token, user: res.user };
-  } catch {
-    await window.pulso.auth.clearSession();
+  } catch (error) {
+    const terminalStatus = error?.status === 401 || error?.status === 403;
+    const terminalCodes = new Set(['INVALID_SESSION', 'SESSION_REVOKED', 'REVOKED', 'UNAUTHORIZED']);
+    if (terminalStatus || terminalCodes.has(error?.code)) {
+      try {
+        await window.pulso.auth.clearSession();
+      } catch (clearError) {
+        console.warn('[Auth] Não foi possível limpar a sessão revogada.', clearError);
+      }
+    } else {
+      // Keep the encrypted token for the next launch. Offline/timeouts and
+      // backend outages must not silently log the user out.
+      console.warn('[Auth] Sessão não verificada por falha transitória.', error);
+    }
     return null;
   }
 }
@@ -36,9 +55,15 @@ export async function loginWithDiscord(onStatus) {
   const hwid = await window.pulso.auth.getHwid();
   const res = await backend.exchangeDiscordCode(code, hwid);
 
-  if (res.status === 'pending') {
+  if (res?.status === 'pending') {
     const err = new Error('Seu acesso ainda não foi aprovado. Fale com o administrador.');
     err.code = 'PENDING';
+    throw err;
+  }
+
+  if (!res?.sessionToken || !res?.user) {
+    const err = new Error('O servidor retornou uma resposta de login inválida.');
+    err.code = 'INVALID_RESPONSE';
     throw err;
   }
 

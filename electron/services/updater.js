@@ -2,6 +2,9 @@ const { autoUpdater } = require('electron-updater');
 const { app } = require('electron');
 
 let mainWin = null;
+let initialized = false;
+let checkingPromise = null;
+let downloadPromise = null;
 
 /**
  * Initialize the auto-updater.
@@ -9,6 +12,8 @@ let mainWin = null;
  */
 function init(win) {
   mainWin = win;
+  if (initialized) return { initialized: false };
+  initialized = true;
 
   // Don't auto-download — let the user decide
   autoUpdater.autoDownload = false;
@@ -51,6 +56,8 @@ function init(win) {
       message: err?.message || 'Erro desconhecido ao verificar atualizações',
     });
   });
+
+  return { initialized: true };
 }
 
 /**
@@ -62,24 +69,24 @@ async function check() {
     console.log('[Updater] Skipping update check in dev mode');
     return { skipped: true, reason: 'dev-mode' };
   }
-  try {
-    const result = await autoUpdater.checkForUpdates();
-    return { checking: true };
-  } catch (err) {
-    return { error: err.message };
-  }
+  if (checkingPromise) return checkingPromise;
+  checkingPromise = autoUpdater.checkForUpdates()
+    .then(() => ({ checking: true }))
+    .catch((err) => ({ error: err?.message || 'Falha ao verificar atualizações' }))
+    .finally(() => { checkingPromise = null; });
+  return checkingPromise;
 }
 
 /**
  * Start downloading the available update.
  */
 async function download() {
-  try {
-    await autoUpdater.downloadUpdate();
-    return { downloading: true };
-  } catch (err) {
-    return { error: err.message };
-  }
+  if (downloadPromise) return downloadPromise;
+  downloadPromise = autoUpdater.downloadUpdate()
+    .then(() => ({ downloading: true }))
+    .catch((err) => ({ error: err?.message || 'Falha ao baixar a atualização' }))
+    .finally(() => { downloadPromise = null; });
+  return downloadPromise;
 }
 
 /**
