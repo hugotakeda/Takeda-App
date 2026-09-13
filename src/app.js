@@ -80,10 +80,6 @@ function renderAppLayout(user, sysUsername) {
           ${SIDEBAR_ICONS.history}
           <span>Histórico</span>
         </button>
-        <button class="sidebar-nav-item" data-page="powerplan">
-          ${SIDEBAR_ICONS.powerplan}
-          <span>Plano de Energia</span>
-        </button>
         <button class="sidebar-nav-item" data-page="apps">
           ${SIDEBAR_ICONS.apps}
           <span>Instaladores</span>
@@ -130,15 +126,6 @@ function renderAppLayout(user, sysUsername) {
 }
 
 function navigateTo(page) {
-  // Power plan opens as modal
-  if (page === 'powerplan') {
-    document.querySelectorAll('.sidebar-nav-item[data-page]').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.page === 'powerplan');
-    });
-    void openPowerPlanModal();
-    return;
-  }
-
   if (page === currentPage) return;
 
   disposeCurrentPage();
@@ -247,7 +234,18 @@ function renderDashboard(user = currentUser, sysUsername = currentSysUsername) {
         <div class="health-status" id="health-status">${t('btn_analyzing')}</div>
         <div class="health-desc" id="health-desc">${t('loading')}</div>
 
-        <button class="btn-primary" id="btn-run-diag">${t('btn_analyze')}</button>
+        <div class="health-actions">
+          <button class="btn-primary" id="btn-run-diag" type="button">${t('btn_analyze')}</button>
+          <button class="dashboard-power-button" id="btn-open-power-plan" type="button" aria-haspopup="dialog">
+            <span class="dashboard-power-button-label">
+              ${SIDEBAR_ICONS.powerplan}
+              <span>Plano de Energia</span>
+            </span>
+            <svg class="dashboard-power-button-arrow" aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
       </div>
 
       <!-- Right Column: Metrics -->
@@ -373,6 +371,7 @@ function initDashboard() {
     });
 
   document.getElementById('btn-run-diag')?.addEventListener('click', () => void openModal());
+  document.getElementById('btn-open-power-plan')?.addEventListener('click', () => void openPowerPlanModal());
 
   initUpdateListeners();
 }

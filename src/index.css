@@ -2008,6 +2008,69 @@ textarea:focus-visible,
   font-size: 0.66rem;
 }
 
+.health-actions {
+  display: grid;
+  gap: 7px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.health-actions .btn-primary {
+  margin: 0;
+}
+
+.dashboard-power-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 37px;
+  padding: 8px 10px;
+  border: 1px solid rgba(190, 174, 246, 0.14);
+  border-radius: 10px;
+  background:
+    linear-gradient(135deg, rgba(183, 167, 245, 0.075), rgba(255, 255, 255, 0.018)),
+    rgba(7, 6, 11, 0.32);
+  color: #c5badf;
+  cursor: pointer;
+  font-size: 0.69rem;
+  font-weight: 620;
+  transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.dashboard-power-button:hover {
+  border-color: rgba(190, 174, 246, 0.27);
+  background:
+    linear-gradient(135deg, rgba(183, 167, 245, 0.13), rgba(255, 255, 255, 0.025)),
+    rgba(7, 6, 11, 0.38);
+  color: #eee9f5;
+  transform: translateY(-1px);
+}
+
+.dashboard-power-button:active {
+  transform: translateY(0);
+}
+
+.dashboard-power-button-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.dashboard-power-button-label svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  color: #aa94e4;
+}
+
+.dashboard-power-button-arrow {
+  flex: 0 0 auto;
+  color: #736b80;
+}
+
 .btn-primary,
 .btn-modal {
   border: 1px solid rgba(255, 255, 255, 0.38);
@@ -2514,11 +2577,24 @@ textarea:focus-visible,
   transform: translateY(-50%);
 }
 
+.apps-tabs-shell {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) 28px;
+  align-items: stretch;
+  gap: 5px;
+  min-width: 0;
+  margin-top: 12px;
+}
+
 .apps-tabs {
   flex-wrap: nowrap;
+  min-width: 0;
   max-width: 100%;
-  margin-top: 12px;
   overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-behavior: smooth;
+  scroll-padding-inline: 6px;
+  scroll-snap-type: x proximity;
   scrollbar-width: none;
 }
 
@@ -2528,7 +2604,44 @@ textarea:focus-visible,
 
 .apps-tabs .app-tab-btn {
   flex: 0 0 auto;
-  padding: 7px 12px;
+  padding: 7px 6px;
+  font-size: 0.68rem;
+  scroll-snap-align: start;
+}
+
+.apps-tabs-scroll {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.026);
+  color: #9b8fc0;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease, opacity 0.18s ease;
+}
+
+.apps-tabs-scroll:hover:not(:disabled) {
+  border-color: rgba(190, 174, 246, 0.2);
+  background: rgba(183, 167, 245, 0.09);
+  color: #e7e0f4;
+}
+
+.apps-tabs-scroll:disabled {
+  color: #57515f;
+  cursor: default;
+  opacity: 0.34;
+}
+
+.apps-tabs-shell:not(.has-overflow) {
+  grid-template-columns: 0 minmax(0, 1fr) 0;
+  gap: 0;
+}
+
+.apps-tabs-shell:not(.has-overflow) .apps-tabs-scroll {
+  visibility: hidden;
 }
 
 .apps-list {
@@ -3092,6 +3205,54 @@ textarea:focus-visible,
 
 .tool-card:last-child {
   margin-bottom: 0;
+}
+
+.destructive-warning {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: start;
+  gap: 11px;
+  margin-bottom: 10px;
+  padding: 11px 12px;
+  border: 1px solid rgba(239, 133, 142, 0.16);
+  border-radius: 12px;
+  background:
+    linear-gradient(135deg, rgba(239, 133, 142, 0.075), transparent 58%),
+    rgba(42, 18, 24, 0.18);
+  color: #a49ca8;
+  font-size: 0.65rem;
+  line-height: 1.48;
+}
+
+.destructive-warning-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(239, 133, 142, 0.16);
+  border-radius: 10px;
+  background: rgba(239, 133, 142, 0.075);
+  color: #e58b94;
+}
+
+.destructive-warning-icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.destructive-warning-copy {
+  min-width: 0;
+  padding-top: 1px;
+  overflow-wrap: anywhere;
+}
+
+.destructive-warning-copy strong {
+  display: block;
+  margin-bottom: 2px;
+  color: #efb0b6;
+  font-size: 0.7rem;
+  font-weight: 660;
 }
 
 .tool-card-title {

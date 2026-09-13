@@ -119,7 +119,7 @@ export function renderApps() {
     { id: 'todos', name: 'Todos' },
     ...appsCategories
   ].map(tab => `
-    <button class="app-tab-btn ${tab.id === 'todos' ? 'active' : ''}" type="button" role="tab" aria-selected="${tab.id === 'todos'}" data-tab="${tab.id}">${tab.name}</button>
+    <button class="app-tab-btn ${tab.id === 'todos' ? 'active' : ''}" type="button" role="tab" aria-selected="${tab.id === 'todos'}" tabindex="${tab.id === 'todos' ? '0' : '-1'}" data-tab="${tab.id}">${tab.name}</button>
   `).join('');
 
   return `
@@ -141,8 +141,16 @@ export function renderApps() {
         </div>
       </div>
       
-      <div class="tab-bar apps-tabs" id="apps-tabs-container" role="tablist" aria-label="Categorias de aplicativos">
-        ${tabsHtml}
+      <div class="apps-tabs-shell" id="apps-tabs-shell">
+        <button class="apps-tabs-scroll" id="apps-tabs-previous" type="button" aria-label="Mostrar categorias anteriores" aria-controls="apps-tabs-container" disabled>
+          <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <div class="tab-bar apps-tabs" id="apps-tabs-container" role="tablist" aria-label="Categorias de aplicativos">
+          ${tabsHtml}
+        </div>
+        <button class="apps-tabs-scroll" id="apps-tabs-next" type="button" aria-label="Mostrar próximas categorias" aria-controls="apps-tabs-container">
+          <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
       </div>
     </div>
     
@@ -202,15 +210,57 @@ function renderAppsList(filterText = '', activeTab = 'todos') {
 export function initApps() {
   const container = document.getElementById('apps-list-container');
   const searchInput = document.getElementById('app-search-input');
-  const tabBtns = document.querySelectorAll('.app-tab-btn');
+  const tabRail = document.getElementById('apps-tabs-container');
+  const tabShell = document.getElementById('apps-tabs-shell');
+  const previousButton = document.getElementById('apps-tabs-previous');
+  const nextButton = document.getElementById('apps-tabs-next');
+  const tabBtns = Array.from(tabRail?.querySelectorAll('.app-tab-btn') || []);
   
-  if (!container || !searchInput) return () => {};
+  if (!container || !searchInput || !tabRail) return () => {};
 
   let currentTab = 'todos';
   let currentSearch = '';
   let searchTimer = null;
   let alive = true;
   const feedbackTimers = new Set();
+  let tabResizeObserver = null;
+
+  const updateTabScrollState = () => {
+    if (!alive || !tabRail.isConnected) return;
+    const maximum = Math.max(0, tabRail.scrollWidth - tabRail.clientWidth);
+    const overflowing = maximum > 1;
+    tabShell?.classList.toggle('has-overflow', overflowing);
+    if (previousButton) previousButton.disabled = !overflowing || tabRail.scrollLeft <= 1;
+    if (nextButton) nextButton.disabled = !overflowing || tabRail.scrollLeft >= maximum - 1;
+  };
+
+  const scrollTabs = (direction) => {
+    const distance = Math.max(180, Math.round(tabRail.clientWidth * 0.62));
+    tabRail.scrollBy({ left: distance * direction, behavior: 'smooth' });
+  };
+
+  const revealTab = (target) => {
+    const left = target.offsetLeft;
+    const right = left + target.offsetWidth;
+    const visibleLeft = tabRail.scrollLeft;
+    const visibleRight = visibleLeft + tabRail.clientWidth;
+    let destination = visibleLeft;
+
+    if (left < visibleLeft + 4) destination = left - 4;
+    if (right > visibleRight - 4) destination = right - tabRail.clientWidth + 4;
+    if (Math.abs(destination - visibleLeft) > 1) {
+      tabRail.scrollTo({ left: destination, behavior: 'smooth' });
+    }
+  };
+
+  previousButton?.addEventListener('click', () => scrollTabs(-1));
+  nextButton?.addEventListener('click', () => scrollTabs(1));
+  tabRail.addEventListener('scroll', updateTabScrollState, { passive: true });
+  tabRail.addEventListener('wheel', (event) => {
+    if (tabRail.scrollWidth <= tabRail.clientWidth + 1 || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+    event.preventDefault();
+    tabRail.scrollLeft += event.deltaY;
+  }, { passive: false });
 
   const updateList = () => {
     if (!alive || !container.isConnected) return;
@@ -231,20 +281,44 @@ export function initApps() {
     searchTimer = window.setTimeout(updateList, 160);
   });
 
-  // Tabs logic
-  tabBtns.forEach(btn => {
-    btn.addEventListener('click', (e) => {
+  const selectTab = (target) => {
+      if (!target) return;
       tabBtns.forEach(b => b.classList.remove('active'));
       tabBtns.forEach(b => b.setAttribute('aria-selected', 'false'));
+      tabBtns.forEach(b => { b.tabIndex = -1; });
 
-      const target = e.currentTarget;
       target.classList.add('active');
       target.setAttribute('aria-selected', 'true');
+      target.tabIndex = 0;
 
       currentTab = target.dataset.tab;
       updateList();
+      revealTab(target);
+      window.requestAnimationFrame(updateTabScrollState);
+  };
+
+  // Tabs logic: click, keyboard and automatic reveal of the selected category.
+  tabBtns.forEach((btn, index) => {
+    btn.addEventListener('click', (event) => selectTab(event.currentTarget));
+    btn.addEventListener('keydown', (event) => {
+      let nextIndex = null;
+      if (event.key === 'ArrowRight') nextIndex = (index + 1) % tabBtns.length;
+      if (event.key === 'ArrowLeft') nextIndex = (index - 1 + tabBtns.length) % tabBtns.length;
+      if (event.key === 'Home') nextIndex = 0;
+      if (event.key === 'End') nextIndex = tabBtns.length - 1;
+      if (nextIndex === null) return;
+      event.preventDefault();
+      const nextTab = tabBtns[nextIndex];
+      nextTab.focus();
+      selectTab(nextTab);
     });
   });
+
+  if (typeof ResizeObserver === 'function') {
+    tabResizeObserver = new ResizeObserver(updateTabScrollState);
+    tabResizeObserver.observe(tabRail);
+  }
+  window.requestAnimationFrame(updateTabScrollState);
 
   // Individual install logic
   const attachInstallListeners = () => {
@@ -296,5 +370,6 @@ export function initApps() {
     window.clearTimeout(searchTimer);
     feedbackTimers.forEach((timer) => window.clearTimeout(timer));
     feedbackTimers.clear();
+    tabResizeObserver?.disconnect();
   };
 }
