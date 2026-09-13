@@ -1,6 +1,6 @@
 {
   "name": "takeda-app",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Takeda App - Análise, Limpeza e Otimização do Sistema",
   "main": "electron/main.js",
   "scripts": {
@@ -20,6 +20,7 @@
   "build": {
     "appId": "com.honesttech.takeda",
     "productName": "Takeda App",
+    "artifactName": "Takeda-App-Setup-${version}.${ext}",
     "asar": true,
     "electronFuses": {
       "runAsNode": false,

@@ -6,7 +6,7 @@
   <p>
     <img src="https://img.shields.io/badge/plataforma-Windows-0078D4?style=flat-square&logo=windows&logoColor=white" />
     <img src="https://img.shields.io/badge/electron-v44-47848F?style=flat-square&logo=electron&logoColor=white" />
-    <img src="https://img.shields.io/badge/versão-1.1.1-b7a7f5?style=flat-square" />
+    <img src="https://img.shields.io/badge/versão-1.1.2-b7a7f5?style=flat-square" />
     <img src="https://img.shields.io/badge/licença-MIT-blue?style=flat-square" />
     <img src="https://img.shields.io/badge/auth-Discord%20OAuth2-5865F2?style=flat-square&logo=discord&logoColor=white" />
   </p>
@@ -24,7 +24,7 @@
 
 O **Takeda App** é um aplicativo desktop para Windows que oferece um painel completo de monitoramento, diagnóstico, limpeza e otimização do sistema operacional. Desenvolvido com **Electron**, ele combina ferramentas nativas via PowerShell e WMI com uma interface redesenhada em obsidiana, marfim e lavanda, alinhada ao novo ícone Takeda.
 
-A versão **1.1.1** também reorganiza a área de Ferramentas, mantém as sete categorias visíveis e adiciona regiões de rolagem reais para listas extensas de Privacidade, Debloat e Limpeza Avançada. Consulte o [CHANGELOG](CHANGELOG.md) para o histórico completo.
+A versão **1.1.2** aproxima as ações mais importantes da dashboard, corrige o aviso de Exclusão Segura e garante acesso completo a todas as categorias da Central de Apps. A navegação continua adaptável a zoom e textos maiores, com suporte a mouse, trackpad e teclado. Consulte o [CHANGELOG](CHANGELOG.md) para o histórico completo.
 
 O aplicativo agora conta com o sistema inteligente de **Atualizações OTA (On-The-Air)**, garantindo que o seu sistema sempre receba novas versões automaticamente em segundo plano de forma contínua e sem necessidade de downloads manuais.
 
@@ -77,12 +77,12 @@ Se o DevTools for aberto na janela principal, o aplicativo se fecha automaticame
 ### ⚡ Perfil de Energia Takeda
 > Libere a força do "Ultimate Performance" oculto do Windows.
 
-Aba dedicada que previne "bottlenecks" de energia importando e aplicando automaticamente o perfil customizado `takeda.pow`. Ele otimiza os "timers" de sistema e evita que o disco ou as portas USB sejam desligadas para economizar luz, entregando 100% de estabilidade para gamers exigentes.
+Ação direta logo abaixo de **Analisar** na dashboard, que importa e aplica automaticamente o perfil customizado `takeda.pow`. Ele otimiza os "timers" de sistema e evita que o disco ou as portas USB sejam desligadas para economizar luz, entregando 100% de estabilidade para gamers exigentes.
 
 ### ⬇️ Instalador de Apps e Atualizador
 > Instalação automatizada do essencial e atualizações constantes.
 
-- **Central de Apps:** Lista inteligente para instalação rápida de softwares cruciais sem precisar abrir o navegador (Steam, Discord, navegadores, drivers). 
+- **Central de Apps:** Lista inteligente para instalação rápida de softwares cruciais sem precisar abrir o navegador, com todas as categorias sempre acessíveis e navegação por mouse, trackpad ou teclado.
 - **Atualizações (OTA):** Mecanismo de download contínuo de atualizações do aplicativo diretamente do GitHub Releases, alertando o usuário via painel banner (com progresso) quando a atualização for baixada.
 
 ### 📊 Painel de Histórico

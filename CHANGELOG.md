@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.2] - 2026-09-13
+
+### Interface e navegação
+- O Plano de Energia foi movido da barra lateral para uma ação direta logo abaixo do botão **Analisar** na dashboard.
+- O aviso da Exclusão Segura recebeu um card compacto e responsivo, corrigindo tipografia, alinhamento e quebra de texto.
+- Todas as opções da barra de categorias da Central de Apps agora aparecem completas na largura padrão da janela.
+- A barra de categorias ganhou fallback adaptativo com rolagem, controles direcionais e navegação por setas, Home e End para zoom ou textos maiores.
+
+### Qualidade
+- Adicionados testes de regressão para o posicionamento do Plano de Energia, o aviso da Exclusão Segura e a acessibilidade das categorias.
+- Interface validada no tamanho oficial de 970 × 545, sem erros no console, e pacote de produção verificado.
+
 ## [1.1.0] - 2026-09-09
 
 ### Correções de interface
